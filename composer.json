@@ -6,10 +6,18 @@
             "email": "dranitsynevgeniy@gmail.com"
         }
     ],
+    "scripts": {
+      "test": [
+        "php ./vendor/bin/phpunit --bootstrap vendor/autoload.php test/router/RouterTest"
+      ]
+    },
     "autoload": {
       "psr-4": {
-        "fortress\\": "fortress/"  
+        "fortress\\": "fortress/",
+        "test\\": "test/"
       }
     },
-    "require": {}
+    "require-dev": {
+        "phpunit/phpunit": "^7.3"
+    }
 }

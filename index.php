@@ -1,7 +1,8 @@
 <?php
 
 require_once "vendor/autoload.php";
+require_once "fortress/core/bootstrap.php";
 
-use fortress\core\Fortress;
+// Пользовательские действия
 
-new Fortress();
+$fortress -> run();
