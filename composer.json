@@ -1,0 +1,15 @@
+{
+    "name": "micromagicman/fortress",
+    "authors": [
+        {
+            "name": "micromagicman",
+            "email": "dranitsynevgeniy@gmail.com"
+        }
+    ],
+    "autoload": {
+      "psr-4": {
+        "fortress\\": "fortress/"  
+      }
+    },
+    "require": {}
+}
