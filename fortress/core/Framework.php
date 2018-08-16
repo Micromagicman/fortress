@@ -6,6 +6,8 @@ use fortress\core\http\request\HttpRequest;
 use fortress\core\exception\FortressException;
 use fortress\core\router\Router;
 
+use fortress\core\logger\HtmlLogger;
+
 class Framework {
 
   private $app_name;
@@ -18,8 +20,8 @@ class Framework {
     try {
       $router = new Router();
     } catch (FortressException $e) {
-      echo $e -> getMessage();
+      $logger = new HtmlLogger();
+      $logger->printException($e);
     }
   }
-
 }

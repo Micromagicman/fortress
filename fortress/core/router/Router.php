@@ -9,6 +9,7 @@ class Router {
   private $routes;
 
   public function __construct() {
+    throw new RouteNotFoundException("/");
   }
 
   public function route($request) {
