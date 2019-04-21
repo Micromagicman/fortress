@@ -1,11 +1,16 @@
 <?php
 
 use fortress\core\Framework;
+use fortress\core\configurator\Configurator;
 
-
-
-// Создание объекта фреймворка
+use Symfony\Component\HttpFoundation\Request;
 
 // Чтение конфига
+$configurator = new Configurator();
 
-// Чтение роутов
+// Создание объекта фреймворка
+$fortress = new Framework($configurator);
+
+// Обработка запроса
+$request = Request::createFromGlobals();
+$fortress->run($request);
