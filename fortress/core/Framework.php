@@ -8,36 +8,21 @@ use fortress\core\di\DependencyNotFoundException;
 
 use Symfony\Component\HttpFoundation\Request;
 
-class Framework implements ContainerInterface {
+class Framework {
 
-    private $storage = [];
+    private $configuration;
 
-    private $dependencyCache = [];
+    private $container;
 
-    public function __construct(Configurator $conf) {
-        $conf->initializeContainer($this);
-    }
-
-    public function set(string $name, $value) {
-        $this->storage[$name] = $value;
-    }
-
-    public function get(string $name) {
-        if (array_key_exists($name, $this->dependencyCache)) {
-            return $this->dependencyCache[$name];
-        }
-
-        if (array_key_exists($name, $this->storage)) {
-            // TODO - резолвинг зависимостей инстанцируемого объекта!
-            $namespace = $this->storage[$name];
-            $obj = new $namespace();
-            $this->dependencyCache[$name] = $obj;
-            return $obj;
-        }
-
-        throw new DependencyNotFoundException($name);
+    public function __construct(Configurator $conf, ContainerInterface $ci) {
+        $this->container = $ci;
+        $conf->initializeContainer($this->container);
+        $conf->initializeRouter($this->container->get("router")->getRouteCollection());
     }
 
     public function run(Request $request) {
+        $router = $this->container->get("router");
+        var_dump($router);
+        echo "fortress is running";
     }
 }
