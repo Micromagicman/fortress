@@ -21,8 +21,7 @@ class Framework {
     }
 
     public function run(Request $request) {
-        $router = $this->container->get("router");
-        var_dump($router);
+        $this->container->set("request", $request);
         echo "fortress is running";
     }
 }
