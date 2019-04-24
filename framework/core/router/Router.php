@@ -17,12 +17,15 @@ class Router {
     }
 
     public function match(Request $request) {
-        $url = $request->getBaseUrl();
+        $url = $request->getRequestUri();
+        $method = $request->getMethod();
+
         foreach ($this->routes->all() as $name => $route) {
-            if ($route->match($url)) {
+            if ($route->matches($url, $method)) {
                 return $route;
             }
         }
+
         throw new RouteNotFoundException($url);
     }
 }

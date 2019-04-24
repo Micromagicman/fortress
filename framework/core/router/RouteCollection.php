@@ -13,9 +13,10 @@ class RouteCollection {
     }
 
     public function add(string $name, string $url, array $route) {
+        // $urlRegex = Route::createUrlRegex($url);
         $this->routes[$name] = new Route(
             $name,
-            $this->createUrlRegex($url),
+            $url,
             $route["controller"],
             $route["action"],
             $route["method"] ?? ["*"]
@@ -24,10 +25,5 @@ class RouteCollection {
 
     public function all() {
         return $this->routes;
-    }
-
-    private function createUrlRegex() {
-        // TODO - создание регулярки из url
-        return "";
     }
 }

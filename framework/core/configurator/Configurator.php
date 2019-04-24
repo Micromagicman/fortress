@@ -8,8 +8,10 @@ use fortress\core\router\RouteCollection;
 class Configurator {
 
     public function initializeContainer(ContainerInterface $c) {
-        $initializer = require_once "../config/services.php";
-        $initializer($c);
+        $serviceInitializer = require_once "../config/services.php";
+        $parameterInitializer = require_once  "../config/parameters.php";
+        $parameterInitializer($c);
+        $serviceInitializer($c);
     }
 
     public function initializeRouter(RouteCollection $rc) {
