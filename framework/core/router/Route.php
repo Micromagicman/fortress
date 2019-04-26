@@ -19,7 +19,7 @@ class Route {
 
     private $controllerClass;
 
-    private $controllerMethod;
+    private $actionName;
 
     private $variables = [];
 
@@ -27,16 +27,24 @@ class Route {
         string $name, 
         string $urlRegex,
         string $controllerClass, 
-        string $controllerMethod, 
+        string $actionName, 
         array $requestMethods = ["*"]
     ) {
         $this->name = $name;
         $this->urlRegex = $this->createUrlRegex($urlRegex);
         $this->controllerClass = $controllerClass;
-        $this->controllerMethod = $controllerMethod;
+        $this->actionName = $actionName;
         $this->requestMethods = array_map(function($m) {
             return mb_strtoupper($m);
         }, $requestMethods);
+    }
+
+    public function getControllerClass() {
+        return $this->controllerClass;
+    }
+
+    public function getActionName() {
+        return $this->actionName;
     }
 
     public function isValidRequestMethod(string $method) {

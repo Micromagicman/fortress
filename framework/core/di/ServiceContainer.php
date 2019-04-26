@@ -4,6 +4,10 @@ namespace fortress\core\di;
 
 class ServiceContainer implements ContainerInterface {
 
+    private $builder;
+
+    private $invoker;
+
     private $storage = [];
 
     private $objectCache = [];
@@ -11,6 +15,8 @@ class ServiceContainer implements ContainerInterface {
     private $parameters = [];
 
     public function __construct() {
+        $this->builder = new ObjectBuilder();
+        $this->invoker = new MethodInvoker();
         $this->objectCache["container"] = $this;
     }
 
@@ -40,18 +46,29 @@ class ServiceContainer implements ContainerInterface {
     }
 
     public function getParameter(string $name) {
-        if (array_key_exists($name, $this->parameters)) {
-            return $this->parameters[$name];
-        }
-        return null;
+        return $this->getParameterOrDefault($name, null);
     }
 
     public function getParameterOrDefault(string $name, $default) {
-        $parameter = $this->getParameter($name);
-        return $parameter !== null ? $parameter : $default;
+        if (array_key_exists($name, $this->parameters)) {
+            return $this->parameters[$name];
+        }
+        return $default;
     }
 
     public function setParameter(string $name, $value) {
         $this->parameters[$name] = $value;
+    }
+
+    public function build(string $className, array $constructorArgs = []) {
+        return $this->builder->build($className, $constructorArgs);
+    }
+
+    public function invoke($object, string $methodName, array $methodArgs = []) {
+        // Если объект передан в качестве ключа в контейнере зависимостей
+        if (is_string($object)) {
+            $object = $this->get($object);
+        }
+        return $this->invoker->invoke($object, $methodName, $methodArgs);
     }
 }

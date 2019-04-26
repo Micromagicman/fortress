@@ -15,4 +15,7 @@ $fortress = new Framework($configurator, $container);
 
 // Обработка запроса
 $request = Request::createFromGlobals();
-$fortress->run($request);
+$response = $fortress->run($request);
+
+$response->sendHeaders();
+echo $response->getContent();
