@@ -3,12 +3,12 @@
     "authors": [
         {
             "name": "micromagicman",
-            "email": "dranitsynevgeniy@gmail.com"
+            "email": "evgen@micromagicman.ru"
         }
     ],
     "scripts": {
       "test": [
-        "php ./vendor/bin/phpunit --bootstrap vendor/autoload.php test/router/RouterTest"
+        ""
       ]
     },
     "autoload": {

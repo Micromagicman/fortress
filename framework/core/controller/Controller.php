@@ -3,8 +3,10 @@
 namespace fortress\core\controller;
 
 use fortress\core\di\ContainerInterface;
+use fortress\core\http\response\HtmlResponse;
 use fortress\core\http\response\JsonResponse;
 use fortress\core\http\response\RedirectResponse;
+use fortress\core\view\PhpView;
 
 abstract class Controller {
 
@@ -30,7 +32,9 @@ abstract class Controller {
         return new JsonResponse($data, $statusCode);
     }
 
-    protected function render(string $templateName, array $data = []) {
-        // TODO - рендеринг php шаблона        
+    protected function render(string $templateName, array $data = [], int $statusCode = 200) {
+        $view = new PhpView($templateName);
+        $htmlContent = $view->render($data);
+        return new HtmlResponse($htmlContent, $statusCode);
     }
 }
