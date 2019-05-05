@@ -20,6 +20,7 @@ class Framework {
         $this->container = $ci;
         $conf->initializeContainer($this->container);
         $conf->initializeRouter($this->container->get("router")->getRouteCollection());
+        $conf->initializeDatabase($this->container);
     }
 
     public function run(Request $request) {

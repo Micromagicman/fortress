@@ -4,6 +4,8 @@ namespace fortress\core\configurator;
 
 use fortress\core\di\ContainerInterface;
 use fortress\core\router\RouteCollection;
+use fortress\core\database\DatabaseConfiguration;
+use fortress\core\database\Database;
 
 class Configurator {
 
@@ -17,5 +19,13 @@ class Configurator {
     public function initializeRouter(RouteCollection $rc) {
         $initializer = require_once "../config/routes.php";
         $initializer($rc);
+    }
+
+    public function initializeDatabase(ContainerInterface $c) {
+        $config = require_once "../config/database.php";
+        $databaseConfiguration = new DatabaseConfiguration($config);
+        $database = new Database($databaseConfiguration);
+        $c->set("db.configuration", $databaseConfiguration);
+        $c->set("db.connection", $database);
     }
 }
