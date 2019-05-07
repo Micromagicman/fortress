@@ -2,8 +2,6 @@
 
 namespace fortress\core\router;
 
-use fortress\core\di\ContainerInterface;
-
 class Route {
 
     private const VARIABLE_PATTERNS = [
@@ -12,6 +10,8 @@ class Route {
     ];
 
     private $name;
+
+    private $uri;
 
     private $urlRegex;
 
@@ -25,18 +25,28 @@ class Route {
 
     public function __construct(
         string $name, 
-        string $urlRegex,
+        string $uri,
         string $controllerClass, 
         string $actionName, 
         array $requestMethods = ["*"]
     ) {
         $this->name = $name;
-        $this->urlRegex = $this->createUrlRegex($urlRegex);
+        $this->uri = $uri;
+        $this->urlRegex = $this->createUrlRegex($uri);
         $this->controllerClass = $controllerClass;
         $this->actionName = $actionName;
         $this->requestMethods = array_map(function($m) {
             return mb_strtoupper($m);
         }, $requestMethods);
+    }
+
+    public function getUri() {
+        return $this->uri;
+    }
+
+    public function setUri(string $uri) {
+        $this->uri = $uri;
+        $this->urlRegex = $this->createUrlRegex($uri);
     }
 
     public function getControllerClass() {
@@ -55,29 +65,29 @@ class Route {
         return count($this->requestMethods) === 1 && $this->requestMethods[0] === "*";
     }
 
-    public function matches($url, $method = "GET") {
-        return $this->isValidRequestMethod($method) && preg_match($this->urlRegex, $url);
+    public function matches($uri, $method = "GET") {
+        return $this->isValidRequestMethod($method) && preg_match($this->urlRegex, $uri);
     }
 
-    public function getVariables(string $url) {
-        // TODO - извлечение переменных из url
+    public function getVariables(string $uri) {
+        // TODO - извлечение переменных из uri
     }
 
-    private function createUrlRegex(string $url) {
-        $urlChunks = explode("/", $url);
+    private function createUrlRegex(string $uri) {
+        $uriChunks = explode("/", $uri);
         $regexChunks = [];
-        foreach ($urlChunks as $urlChunk) {
-            $regexChunks[] = $this->replacePatternIfExists($urlChunk);
+        foreach ($uriChunks as $uriChunk) {
+            $regexChunks[] = $this->replacePatternIfExists($uriChunk);
         }
         return "/^". implode("\\/", $regexChunks)  . "$/";
     }
 
-    private function replacePatternIfExists(string $urlChunk) {
+    private function replacePatternIfExists(string $uriChunk) {
         foreach (self::VARIABLE_PATTERNS as $varPattern => $varRegex) {
-            if (preg_match($varPattern, $urlChunk)) {
+            if (preg_match($varPattern, $uriChunk)) {
                 return $varRegex;
             }
         }
-        return $urlChunk;
+        return $uriChunk;
     }
 }

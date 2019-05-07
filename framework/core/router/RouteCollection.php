@@ -6,20 +6,26 @@ class RouteCollection {
 
     private $routes = [];
 
+    public function addPrefix(string $prefix) {
+        foreach ($this->routes as $name => $route) {
+            $prevUri = $this->routes[$name]->getUri();
+            $this->routes[$name]->setUri($prefix . $prevUri);
+        }
+    }
+
     public function addCollection(RouteCollection $collection) {
         foreach ($collection->all() as $name => $route) {
             $this->routes[$name] = $route;
         }
     }
 
-    public function add(string $name, string $url, array $route) {
-        // $urlRegex = Route::createUrlRegex($url);
+    public function add(string $name, string $uri, array $route) {
         $this->routes[$name] = new Route(
             $name,
-            $url,
+            $uri,
             $route["controller"],
             $route["action"],
-            $route["method"] ?? ["*"]
+            $route["methods"] ?? ["*"]
         );
     }
 

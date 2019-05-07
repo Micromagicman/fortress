@@ -2,25 +2,24 @@
 
 namespace fortress\core;
 
+use Exception;
 use fortress\core\configurator\Configurator;
 use fortress\core\di\ContainerInterface;
-use fortress\core\di\DependencyNotFoundException;
+use fortress\core\di\MethodNotExistException;
+use fortress\core\http\response\NotFoundResponse;
 use fortress\core\router\Route;
 use fortress\core\router\RouteNotFoundException;
 
+use fortress\core\view\PhpView;
 use Symfony\Component\HttpFoundation\Request;
 
 class Framework {
-
-    private $configuration;
 
     private $container;
 
     public function __construct(Configurator $conf, ContainerInterface $ci) {
         $this->container = $ci;
         $conf->initializeContainer($this->container);
-        $conf->initializeRouter($this->container->get("router")->getRouteCollection());
-        $conf->initializeDatabase($this->container);
     }
 
     public function run(Request $request) {
@@ -29,9 +28,8 @@ class Framework {
             $route = $this->findRoute($request);
             $response = $this->buildAndInvokeController($route);
             return $response;
-        } catch (RouteNotFoundException $e) {
-            // NotFoundReponse;
-            echo "404";
+        } catch (RouteNotFoundException | MethodNotExistException $e) {
+            return new NotFoundResponse($this->handleNotFound($e));
         }
     }
 
@@ -55,5 +53,15 @@ class Framework {
         $controller = $this->buildController($route);
         $methodName = $route->getActionName();
         return $this->invokeController($controller, $methodName);
+    }
+
+    private function handleNotFound(Exception $e) {
+        $notFoundTemplatePath = $this->container->getParameter("template.404");
+        $content = $e->getMessage();
+        if (null != $notFoundTemplatePath) {
+            $view = new PhpView($notFoundTemplatePath);
+            $content = $view->render(["exception" => $e]);
+        }
+        return $content;
     }
 }

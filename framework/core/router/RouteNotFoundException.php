@@ -2,6 +2,10 @@
 
 namespace fortress\core\router;
 
-class RouteNotFoundException extends \Exception {
-    
+use Exception;
+
+class RouteNotFoundException extends Exception {
+    public function __construct($message) {
+        parent::__construct("Сannot find route for '$message'");
+    }
 }
