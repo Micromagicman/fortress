@@ -2,13 +2,13 @@
 
 namespace fortress\core\controller;
 
-use fortress\core\di\ContainerInterface;
 use fortress\core\http\response\HtmlResponse;
 use fortress\core\http\response\JsonResponse;
 use fortress\core\http\response\RedirectResponse;
 use fortress\core\view\PhpView;
 use PDO;
 use PDOStatement;
+use Psr\Container\ContainerInterface;
 
 abstract class Controller {
 
@@ -51,7 +51,6 @@ abstract class Controller {
 
     protected function render(string $templateName, array $data = [], int $statusCode = 200) {
         $view = new PhpView($templateName);
-        $data["user"] = $this->container->get("user");
         $htmlContent = $view->render($data);
         return new HtmlResponse($htmlContent, $statusCode);
     }

@@ -13,7 +13,7 @@ class Route {
 
     private $uri;
 
-    private $urlRegex;
+    private $uriRegex;
 
     private $requestMethods;
 
@@ -21,7 +21,7 @@ class Route {
 
     private $actionName;
 
-    private $variables = [];
+    private $uriVariables = [];
 
     public function __construct(
         string $name, 
@@ -32,7 +32,7 @@ class Route {
     ) {
         $this->name = $name;
         $this->uri = $uri;
-        $this->urlRegex = $this->createUrlRegex($uri);
+        $this->uriRegex = $this->createUrlRegex($uri);
         $this->controllerClass = $controllerClass;
         $this->actionName = $actionName;
         $this->requestMethods = array_map(function($m) {
@@ -46,7 +46,15 @@ class Route {
 
     public function setUri(string $uri) {
         $this->uri = $uri;
-        $this->urlRegex = $this->createUrlRegex($uri);
+        $this->uriRegex = $this->createUrlRegex($uri);
+    }
+
+    public function getUriVariables() {
+        return $this->uriVariables;
+    }
+
+    public function setUriVariables(array $variables) {
+        $this->uriVariables = $variables;
     }
 
     public function getControllerClass() {
@@ -65,12 +73,8 @@ class Route {
         return count($this->requestMethods) === 1 && $this->requestMethods[0] === "*";
     }
 
-    public function matches($uri, $method = "GET") {
-        return $this->isValidRequestMethod($method) && preg_match($this->urlRegex, $uri);
-    }
-
-    public function getVariables(string $uri) {
-        // TODO - извлечение переменных из uri
+    public function matches(string $uri, string $method = "GET") {
+        return $this->isValidRequestMethod($method) && preg_match($this->uriRegex, $uri);
     }
 
     private function createUrlRegex(string $uri) {

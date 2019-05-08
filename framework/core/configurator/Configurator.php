@@ -2,11 +2,11 @@
 
 namespace fortress\core\configurator;
 
-use fortress\core\di\ContainerInterface;
 use fortress\core\database\DatabaseConfiguration;
 use fortress\core\database\Database;
 use fortress\core\router\RouteCollection;
 use fortress\core\router\Router;
+use Psr\Container\ContainerInterface;
 
 class Configurator {
 

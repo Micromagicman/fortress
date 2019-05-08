@@ -15,7 +15,7 @@ class Database {
             $this->driver = Driver::createDriver($conf->driverName());
             $this->connection = $this->driver->createConnection($conf);
         } catch (\PDOException $e) {
-            throw new DatabaseInitializationException("Failed to create PDO connection", $e);
+            throw new DatabaseNotInitialized("Failed to create PDO connection", $e);
         }
     }
 
