@@ -1,9 +1,8 @@
 <?php
 
-namespace fortress\core\database;
+namespace fortress\core\exception;
 
 use Exception;
-use fortress\core\exception\FortressException;
 
 class DatabaseNotInitialized extends FortressException {
 

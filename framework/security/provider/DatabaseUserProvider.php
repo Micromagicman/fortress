@@ -1,17 +1,22 @@
 <?php
 
-namespace fortress\security;
+namespace fortress\security\provider;
 
 use fortress\core\database\Database;
 use fortress\core\exception\UserNotFound;
 use fortress\security\basic\BaseUser;
+use fortress\security\RoleProvider;
+use fortress\security\UserProvider;
 
 class DatabaseUserProvider implements UserProvider {
 
     private $dbConnection;
 
-    public function __construct(Database $connection) {
+    private $roleProvider;
+
+    public function __construct(Database $connection, RoleProvider $roleProvider) {
         $this->dbConnection = $connection;
+        $this->roleProvider = $roleProvider;
     }
 
     public function byUsername(string $username) {
@@ -37,15 +42,8 @@ class DatabaseUserProvider implements UserProvider {
     }
 
     private function mapRoles(int $rolesCode) {
-        $roles = [
-            1 => "ROLE_GUEST",
-            2 => "ROLE_USER",
-            4 => "ROLE_EDITOR",
-            8 => "ROLE_STUFF",
-            16 => "ROLE_ADMIN"
-        ];
         $userRoles = [];
-        foreach ($roles as $rCode => $rName) {
+        foreach ($this->roleProvider->getRoleMap() as $rCode => $rName) {
             if (($rolesCode & $rCode) == $rCode) {
                 $userRoles[] = $rName;
             }

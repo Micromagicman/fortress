@@ -2,6 +2,7 @@
 
 namespace fortress\core\router;
 
+use fortress\core\exception\RouteNotFound;
 use Symfony\Component\HttpFoundation\Request;
 
 class Router {

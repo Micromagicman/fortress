@@ -7,6 +7,9 @@ use fortress\core\database\Database;
 use fortress\core\router\RouteCollection;
 use fortress\core\router\Router;
 use fortress\security\basic\BaseAuthenticator;
+use fortress\security\RoleProvider;
+use fortress\security\User;
+use fortress\security\UserProvider;
 use Psr\Container\ContainerInterface;
 
 class Configurator {
@@ -19,7 +22,7 @@ class Configurator {
         $this->initializeDatabase($c);
         // custom services
         $this->intializeServices($c);
-        // secutiry module
+        // security module
         $this->initializeSecurity($c);
     }
 
@@ -58,6 +61,14 @@ class Configurator {
     }
 
     private function initializeSecurity(ContainerInterface $c) {
+        $securityConfig = require_once "../config/security.php";
+        $userConfig = $securityConfig["user"] ?? [];
+        $roleConfig = $securityConfig["role"] ?? [];
+
+        $c->set(User::class, $userConfig["model"]);
+        $c->set(UserProvider::class, $userConfig["provider"]);
+        $c->set(RoleProvider::class, $roleConfig["provider"]);
+
         $auth = $c->get(BaseAuthenticator::class);
         $user = $auth->loadUser();
         $c->set("user", $user);

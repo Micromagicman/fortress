@@ -1,8 +1,6 @@
 <?php
 
-namespace fortress\core\di;
-
-use fortress\core\exception\FortressException;
+namespace fortress\core\exception;
 
 class DependencyNotFound extends FortressException {
 

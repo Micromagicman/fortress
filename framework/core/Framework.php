@@ -4,9 +4,9 @@ namespace fortress\core;
 
 use fortress\core\configurator\Configurator;
 use fortress\core\exception\FortressException;
+use fortress\core\exception\RouteNotFound;
 use fortress\core\http\response\ErrorResponse;
 use fortress\core\router\Route;
-use fortress\core\router\RouteNotFound;
 
 use Symfony\Component\HttpFoundation\Request;
 
@@ -21,7 +21,6 @@ class Framework {
 
     public function run(Request $request) {
         try {
-            $this->container->set("request", $request);
             $route = $this->findRoute($request);
             return $this->buildAndInvokeController($route);
         } catch (RouteNotFound $e) {

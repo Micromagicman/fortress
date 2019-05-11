@@ -2,6 +2,9 @@
 
 namespace fortress\core\view;
 
+use fortress\core\exception\RenderException;
+use fortress\core\exception\TemplateNotFoundException;
+
 abstract class BaseView {
 
     private $parent = null; // get_called_class() instance!
@@ -55,24 +58,19 @@ abstract class BaseView {
     }
 
     public function render(array $variables = [], array $blocks = []) {
-        try {
-            extract($variables);
-            // Собираем ТОЛЬКО блоки 
-            ob_start();
-            require_once $this->templatePath;
-            $this->content .= ob_get_clean();
-            // Заполнение родителя
-            if (null !== $this->parent) {
-                return $this->parent->render($variables, $this->blocks);
-            }
-    
-            $this->assignBlocks($blocks);
-            $this->injectBlocks();
-            return $this->content;
-        } catch (RenderException $e) {
-            // TODO - проброс другого исключения
-            return $e->getMessage();
+        extract($variables);
+        // Собираем ТОЛЬКО блоки
+        ob_start();
+        require_once $this->templatePath;
+        $this->content .= ob_get_clean();
+        // Заполнение родителя
+        if (null !== $this->parent) {
+            return $this->parent->render($variables, $this->blocks);
         }
+
+        $this->assignBlocks($blocks);
+        $this->injectBlocks();
+        return $this->content;
     }
 
     private function injectBlocks() {

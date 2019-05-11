@@ -2,10 +2,10 @@
 
 namespace fortress\security\basic;
 
-use fortress\security\UserInterface;
+use fortress\security\User;
 use Serializable;
 
-class BaseUser implements UserInterface, Serializable {
+class BaseUser implements User, Serializable {
 
     private $username;
 

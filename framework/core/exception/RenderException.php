@@ -1,7 +1,7 @@
 <?php
 
-namespace fortress\core\view;
+namespace fortress\core\exception;
 
-class RenderException extends \Exception {
+class RenderException extends FortressException {
     
 }

@@ -1,5 +1,5 @@
 <?php
 
-namespace fortress\core\view;
+namespace fortress\core\exception;
 
-class TemplateNotFoundException extends \Exception {}
+class TemplateNotFoundException extends FortressException {}

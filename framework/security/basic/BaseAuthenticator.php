@@ -3,8 +3,8 @@
 namespace fortress\security\basic;
 
 use fortress\security\Authenticator;
-use fortress\security\DatabaseUserProvider;
 use fortress\security\Session;
+use fortress\security\UserProvider;
 
 class BaseAuthenticator implements Authenticator {
 
@@ -12,7 +12,7 @@ class BaseAuthenticator implements Authenticator {
 
     private $userProvider;
 
-    public function __construct(Session $session, DatabaseUserProvider $userProvider) {
+    public function __construct(Session $session, UserProvider $userProvider) {
         $this->session = $session;
         $this->userProvider = $userProvider;
     }

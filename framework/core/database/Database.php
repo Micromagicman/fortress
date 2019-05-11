@@ -3,6 +3,8 @@
 namespace fortress\core\database;
 
 use fortress\core\database\driver\Driver;
+use fortress\core\exception\DatabaseNotInitialized;
+use fortress\core\exception\DatabaseQueryException;
 
 class Database {
 
@@ -22,11 +24,11 @@ class Database {
     public function query(string $sql, array $binds = []) {
         $statement = $this->connection->prepare($sql);
         if (!$statement) {
-            // TODO - throw
+            throw new DatabaseQueryException("Error preparing query", $sql);
         }
 
         if (!$statement->execute($binds)) {
-            // TODO - throw
+            throw new DatabaseQueryException("Error performing query", $sql);
         }
 
         return $statement;

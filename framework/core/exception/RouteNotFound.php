@@ -1,8 +1,6 @@
 <?php
 
-namespace fortress\core\router;
-
-use fortress\core\exception\FortressException;
+namespace fortress\core\exception;
 
 class RouteNotFound extends FortressException {
 

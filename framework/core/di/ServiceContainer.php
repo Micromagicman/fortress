@@ -2,6 +2,7 @@
 
 namespace fortress\core\di;
 
+use fortress\core\exception\DependencyNotFound;
 use Psr\Container\ContainerInterface;
 
 class ServiceContainer implements ContainerInterface {
