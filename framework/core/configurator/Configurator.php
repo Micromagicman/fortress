@@ -6,6 +6,7 @@ use fortress\core\database\DatabaseConfiguration;
 use fortress\core\database\Database;
 use fortress\core\router\RouteCollection;
 use fortress\core\router\Router;
+use fortress\security\basic\BaseAuthenticator;
 use Psr\Container\ContainerInterface;
 
 class Configurator {
@@ -18,6 +19,8 @@ class Configurator {
         $this->initializeDatabase($c);
         // custom services
         $this->intializeServices($c);
+        // secutiry module
+        $this->initializeSecurity($c);
     }
 
     private function initializeParameters(ContainerInterface $c) {
@@ -52,5 +55,11 @@ class Configurator {
         $database = new Database($databaseConfiguration);
         $c->set("db.configuration", $databaseConfiguration);
         $c->set("db.connection", $database);
+    }
+
+    private function initializeSecurity(ContainerInterface $c) {
+        $auth = $c->get(BaseAuthenticator::class);
+        $user = $auth->loadUser();
+        $c->set("user", $user);
     }
 }

@@ -49,8 +49,8 @@ class ServiceContainer implements ContainerInterface {
             $object = $this->getByClassName($id);
             if (null == $object) {
                 $object = $this->build($id);
+                $this->objectCache[$id] = $object;
             }
-            $this->objectCache[] = $object;
             return $object;
         }
 

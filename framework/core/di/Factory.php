@@ -2,6 +2,7 @@
 
 namespace fortress\core\di;
 
+use fortress\core\exception\FortressException;
 use ReflectionClass;
 use ReflectionException;
 
@@ -22,7 +23,7 @@ class Factory extends Resolver {
                 return $reflectionObject->newInstanceArgs($arguments);
             }
         } catch (ReflectionException $e) {
-            return null;
+            throw new FortressException("Object creation error", $e);
         }
     }
 

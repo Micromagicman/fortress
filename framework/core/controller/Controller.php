@@ -51,6 +51,7 @@ abstract class Controller {
 
     protected function render(string $templateName, array $data = [], int $statusCode = 200) {
         $view = new PhpView($templateName);
+        $data["user"] = $this->container->get("user");
         $htmlContent = $view->render($data);
         return new HtmlResponse($htmlContent, $statusCode);
     }

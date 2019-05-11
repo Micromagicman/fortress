@@ -2,6 +2,7 @@
 
 namespace fortress\core\di;
 
+use fortress\core\exception\FortressException;
 use ReflectionException;
 use ReflectionMethod;
 
@@ -14,7 +15,7 @@ class Invoker extends Resolver {
             $arguments = array_merge($methodArgs, $arguments);
             return $method->invokeArgs($object, $arguments);
         } catch (ReflectionException $e) {
-            return null;
+            throw new FortressException("Method call error", $e);
         }
     }
 }

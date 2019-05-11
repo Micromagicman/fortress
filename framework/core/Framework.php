@@ -21,6 +21,7 @@ class Framework {
 
     public function run(Request $request) {
         try {
+            $this->container->set("request", $request);
             $route = $this->findRoute($request);
             return $this->buildAndInvokeController($route);
         } catch (RouteNotFound $e) {
