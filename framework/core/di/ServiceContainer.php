@@ -25,7 +25,7 @@ class ServiceContainer implements ContainerInterface {
     }
 
     public function set(string $name, $value) {
-        if (is_object($value)) {
+        if (is_object($value) || null == $value) {
             $this->objectCache[$name] = $value;
             unset($this->storage[$name]);
         } else {

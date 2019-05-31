@@ -8,19 +8,23 @@ use fortress\core\exception\RouteNotFound;
 use fortress\core\http\response\ErrorResponse;
 use fortress\core\router\Route;
 
+use fortress\core\router\Router;
 use Symfony\Component\HttpFoundation\Request;
 
 class Framework {
 
     private $container;
 
-    public function __construct(Configurator $conf, $container) {
+    private $configurator;
+
+    public function __construct(Configurator $configurator, $container) {
         $this->container = $container;
-        $conf->initializeContainer($this->container);
+        $this->configurator = $configurator;
     }
 
     public function run(Request $request) {
         try {
+            $this->configurator->initializeContainer($this->container, $request);
             $route = $this->findRoute($request);
             return $this->buildAndInvokeController($route);
         } catch (RouteNotFound $e) {
@@ -31,7 +35,7 @@ class Framework {
     }
 
     private function findRoute(Request $request) {
-        $router = $this->container->get("router");
+        $router = $this->container->get(Router::class);
         return $router->match($request);
     }
 

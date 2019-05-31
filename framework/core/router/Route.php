@@ -4,9 +4,10 @@ namespace fortress\core\router;
 
 class Route {
 
-    private const VARIABLE_PATTERNS = [
-        "/^\{[a-zA-Z]+:num\}$/" => "[0-9]+(\.[0-9]+)?", // Число
-        "/^\{[a-zA-Z]+:str\}$/" => "[-.,;_a-zA-Zа-яА-Я]+" // Строка
+    private const URI_PATTERNS = [
+        "/\{[a-zA-Z]+:num\}/" => "[0-9]+(\.[0-9]+)?", // Число
+        "/\{[a-zA-Z]+:str\}/" => "[-.,;_a-zA-Zа-яА-Я]+", // Строка
+        "/\*/" => ".*" // Любой под-маршрут
     ];
 
     private $name;
@@ -80,16 +81,19 @@ class Route {
     private function createUrlRegex(string $uri) {
         $uriChunks = explode("/", $uri);
         $regexChunks = [];
+        if ("*" == $uriChunks[count($uriChunks) - 1]) {
+            $uriChunks[count($uriChunks) - 1] = "?*";
+        }
         foreach ($uriChunks as $uriChunk) {
             $regexChunks[] = $this->replacePatternIfExists($uriChunk);
         }
-        return "/^". implode("\\/", $regexChunks)  . "$/";
+        return "/^". implode("\/", $regexChunks)  . "$/";
     }
 
     private function replacePatternIfExists(string $uriChunk) {
-        foreach (self::VARIABLE_PATTERNS as $varPattern => $varRegex) {
-            if (preg_match($varPattern, $uriChunk)) {
-                return $varRegex;
+        foreach (self::URI_PATTERNS as $pattern => $varRegex) {
+            if (preg_match($pattern, $uriChunk)) {
+                return preg_replace($pattern, $varRegex, $uriChunk);
             }
         }
         return $uriChunk;

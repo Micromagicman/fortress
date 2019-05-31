@@ -3,74 +3,83 @@
 namespace fortress\core\configurator;
 
 use fortress\core\database\DatabaseConfiguration;
-use fortress\core\database\Database;
 use fortress\core\router\RouteCollection;
 use fortress\core\router\Router;
-use fortress\security\basic\BaseAuthenticator;
-use fortress\security\RoleProvider;
-use fortress\security\User;
-use fortress\security\UserProvider;
 use Psr\Container\ContainerInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 class Configurator {
 
-    public function initializeContainer(ContainerInterface $c) {
+    private const CONFIG_DIR = ".." . DIRECTORY_SEPARATOR . "config";
+
+    public function initializeContainer(ContainerInterface $container, Request $request) {
         // parameters
-        $this->initializeParameters($c);
+        $this->initializeParameters($container, new ParameterConfiguration());
         // core services
-        $this->initializeRouter($c);
-        $this->initializeDatabase($c);
+        $this->initializeRouter($container);
+        $this->initializeDatabase($container);
         // custom services
-        $this->intializeServices($c);
+        $this->initializeServices($container);
         // security module
-        $this->initializeSecurity($c);
+        $this->initializeSecurity($container, new SecurityConfiguration());
+        // request object
+        $container->set(Request::class, $request);
     }
 
-    private function initializeParameters(ContainerInterface $c) {
-        $parameterInitializer = require_once  "../config/parameters.php";
-        $parameterInitializer($c);
+    private function initializeParameters(
+        ContainerInterface $container,
+        ParameterConfiguration $parameterConfiguration
+    ) {
+        $customConfiguration = $this->tryToLoadConfigurationOrDefault(
+            "parameters",
+            ConfigurationBag::empty()
+        );
+        $parameterConfiguration->initialize($container, $customConfiguration);
     }
 
-    private function intializeServices(ContainerInterface $c) {
-        $serviceInitializer = require_once "../config/services.php";
-        $serviceInitializer($c);
+    private function initializeServices(ContainerInterface $container) {
+        $serviceInitializer = $this->tryToLoadConfigurationOrDefault("services");
+        if (is_callable($serviceInitializer)) {
+            $serviceInitializer($container);
+        }
     }
 
-    private function initializeRouter(ContainerInterface $c) {
-        $initializer = require_once "../config/routes.php";
-        $c->set("router", Router::class);
+    private function initializeRouter(ContainerInterface $container) {
+        $initializer = $this->tryToLoadConfigurationOrDefault("routes", ConfigurationBag::empty());
+        $routeCollection = $container->get(Router::class)->getRouteCollection();
 
-        $routeCollection = $c->get("router")->getRouteCollection();
-        if (is_array($initializer)) {
-            foreach ($initializer as $routeInitializer) {
-                $collection = new RouteCollection();
-                $routeInitializer($collection);
-                $routeCollection->addCollection($collection);
+        if ($initializer instanceof ConfigurationBag) {
+            foreach ($initializer->items() as $routeInitializer) {
+                if (is_callable($routeInitializer)) {
+                    $collection = new RouteCollection();
+                    $routeInitializer($collection);
+                    $routeCollection->addCollection($collection);
+                }
             }
         } else if (is_callable($initializer)) {
             $initializer($routeCollection);
         }
     }
 
-    private function initializeDatabase(ContainerInterface $c) {
-        $config = require_once "../config/database.php";
-        $databaseConfiguration = new DatabaseConfiguration($config);
-        $database = new Database($databaseConfiguration);
-        $c->set("db.configuration", $databaseConfiguration);
-        $c->set("db.connection", $database);
+    private function initializeDatabase(ContainerInterface $container) {
+        $config = $this->tryToLoadConfigurationOrDefault("database", ConfigurationBag::empty());
+        $container->set(DatabaseConfiguration::class, DatabaseConfiguration::build($config));
     }
 
-    private function initializeSecurity(ContainerInterface $c) {
-        $securityConfig = require_once "../config/security.php";
-        $userConfig = $securityConfig["user"] ?? [];
-        $roleConfig = $securityConfig["role"] ?? [];
+    private function initializeSecurity(ContainerInterface $container, SecurityConfiguration $securityConfiguration) {
+        $securityConfig = $this->tryToLoadConfigurationOrDefault("security", ConfigurationBag::empty());
+        $securityConfiguration->initialize($container, $securityConfig);
+    }
 
-        $c->set(User::class, $userConfig["model"]);
-        $c->set(UserProvider::class, $userConfig["provider"]);
-        $c->set(RoleProvider::class, $roleConfig["provider"]);
-
-        $auth = $c->get(BaseAuthenticator::class);
-        $user = $auth->loadUser();
-        $c->set("user", $user);
+    private function tryToLoadConfigurationOrDefault(string $configName, $default = null) {
+        $configPath = self::CONFIG_DIR . DIRECTORY_SEPARATOR . $configName . ".php";
+        if (file_exists($configPath)) {
+            $config = require_once($configPath);
+            if (is_array($config)) {
+                return new ConfigurationBag($config);
+            }
+            return $config;
+        }
+        return $default;
     }
 }

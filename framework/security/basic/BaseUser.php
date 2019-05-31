@@ -7,6 +7,8 @@ use Serializable;
 
 class BaseUser implements User, Serializable {
 
+    private $id;
+
     private $username;
 
     private $email;
@@ -16,15 +18,21 @@ class BaseUser implements User, Serializable {
     private $roles;
 
     public function __construct(
+        string $id = "",
         string $username = "guest",
         string $email = "",
         string $password = "",
         array $roles = ["ROLE_GUEST"]
     ) {
+        $this->id = $id;
         $this->username = $username;
         $this->email = $email;
         $this->password = $password;
         $this->roles = $roles;
+    }
+
+    public function getId() {
+        return $this->id;
     }
 
     public function getRoles() {
@@ -52,6 +60,7 @@ class BaseUser implements User, Serializable {
      */
     public function serialize() {
         return serialize([
+            $this->id,
             $this->username,
             $this->email,
             $this->password,
@@ -64,6 +73,7 @@ class BaseUser implements User, Serializable {
      */
     public function unserialize($serialized) {
         list(
+            $this->id,
             $this->username,
             $this->email,
             $this->password,

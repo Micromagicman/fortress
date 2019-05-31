@@ -15,7 +15,7 @@ class Invoker extends Resolver {
             $arguments = array_merge($methodArgs, $arguments);
             return $method->invokeArgs($object, $arguments);
         } catch (ReflectionException $e) {
-            throw new FortressException("Method call error", $e);
+            throw new FortressException($e->getMessage(), $e->getCode(), $e);
         }
     }
 }

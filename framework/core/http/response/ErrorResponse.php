@@ -8,21 +8,24 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
 
 class ErrorResponse extends Response {
+
     public function __construct(string $content, int $statusCode = 500) {
         parent::__construct($content, $statusCode);
     }
 
     public static function NotFound(FortressException $exception, ContainerInterface $container) {
-        $notFoundTemplatePath = $container->getParameter("template.404");
+        $notFoundTemplateName = $container->getParameter("template.404");
+        $templateDir = $container->getParameter("template.dir");
         $content = $exception->getMessage();
-        if (null != $notFoundTemplatePath) {
-            $view = new PhpView($notFoundTemplatePath);
+        if (null != $notFoundTemplateName) {
+            $view = new PhpView($templateDir, $notFoundTemplateName);
             $content = $view->render(["exception" => $exception]);
         }
         return new ErrorResponse($content, 404);
     }
 
-    public static function ServerError(FortressException $e, ContainerInterface $c) {
-        return new ErrorResponse($e->getMessage(), 500);
+    public static function ServerError(FortressException $e, ContainerInterface $container) {
+        $content = get_class($e) . ": " . $e->getMessage() . " in file " . $e->getFile() . " on line " . $e->getLine();
+        return new ErrorResponse($content, 500);
     }
 }

@@ -2,7 +2,7 @@
 
 namespace fortress\security\provider;
 
-use fortress\core\database\Database;
+use fortress\core\database\DatabaseConnection;
 use fortress\core\exception\UserNotFound;
 use fortress\security\basic\BaseUser;
 use fortress\security\RoleProvider;
@@ -14,7 +14,7 @@ class DatabaseUserProvider implements UserProvider {
 
     private $roleProvider;
 
-    public function __construct(Database $connection, RoleProvider $roleProvider) {
+    public function __construct(DatabaseConnection $connection, RoleProvider $roleProvider) {
         $this->dbConnection = $connection;
         $this->roleProvider = $roleProvider;
     }
@@ -25,6 +25,7 @@ class DatabaseUserProvider implements UserProvider {
             throw new UserNotFound($username);
         }
         return new BaseUser(
+            $userData["id"],
             $userData["username"],
             $userData["email"],
             $userData["password"],
@@ -34,7 +35,7 @@ class DatabaseUserProvider implements UserProvider {
 
     private function fetchOneOrNull(string $username) {
         $selectStatement = $this->dbConnection->query(
-            "SELECT * FROM f_user WHERE username=:username",
+            "SELECT id, username, email, password, role FROM f_user WHERE username=:username",
             ["username" => $username]
         );
         $matches = $selectStatement->fetchAll();

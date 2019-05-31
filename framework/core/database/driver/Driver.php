@@ -3,6 +3,8 @@
 namespace fortress\core\database\driver;
 
 use fortress\core\database\DatabaseConfiguration;
+use fortress\core\exception\DatabaseConnectionError;
+use PDO;
 
 abstract class Driver {
 
@@ -11,12 +13,12 @@ abstract class Driver {
             case "pgsql": 
                 return new PostgreSqlDriver();
             default: 
-                throw new DatabaseInitializationException("Could not find driver " . $name);
+                throw new DatabaseConnectionError("Could not find driver " . $name);
         }
     }
 
     public function createConnection(DatabaseConfiguration $conf) {
-        return new \PDO(
+        return new PDO(
             $this->createDsn($conf),
             $conf->username(),
             $conf->password()

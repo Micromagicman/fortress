@@ -2,20 +2,29 @@
 
 namespace fortress\core\controller;
 
+use fortress\core\database\DatabaseConnection;
 use fortress\core\http\response\HtmlResponse;
 use fortress\core\http\response\JsonResponse;
 use fortress\core\http\response\RedirectResponse;
 use fortress\core\view\PhpView;
+use fortress\security\User;
 use PDO;
 use PDOStatement;
 use Psr\Container\ContainerInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 abstract class Controller {
 
     private $container;
 
+    private $request;
+
+    private $user;
+
     public function __construct(ContainerInterface $ci) {
         $this->container = $ci;
+        $this->request = $this->container->get(Request::class);
+        $this->user = $this->container->get(User::class);
     }
 
     protected function di() {
@@ -23,15 +32,23 @@ abstract class Controller {
     }
 
     protected function request() {
-        return $this->container->get("request");
+        return $this->request;
+    }
+
+    protected function post(string $key, $default = null) {
+        return $this->request->request->get($key, $default);
+    }
+
+    protected function query(string $key, $default = null) {
+        return $this->request->query->get($key, $default);
     }
 
     protected function dbConnection() {
-        return $this->container->get("db.connection");
+        return $this->container->get(DatabaseConnection::class);
     }
 
     protected function user() {
-        return $this->container->get("user");
+        return $this->user;
     }
 
     protected function parameter(string $name, $defaultValue = null) {
@@ -43,16 +60,34 @@ abstract class Controller {
     }
 
     protected function json($data, int $statusCode = 200) {
-        if (!is_array($data) && ($data instanceof PDOStatement)) {
-            $data = $data->fetchAll(PDO::FETCH_ASSOC);
-        }
-        return new JsonResponse($data, $statusCode);
+        return new JsonResponse($this->processDataBeforeOutput($data), $statusCode);
     }
 
     protected function render(string $templateName, array $data = [], int $statusCode = 200) {
-        $view = new PhpView($templateName);
-        $data["user"] = $this->container->get("user");
-        $htmlContent = $view->render($data);
+        $view = $this->createView($templateName);
+        $data["user"] = $this->container->get(User::class);
+        $htmlContent = $view->render($this->processDataBeforeOutput($data));
         return new HtmlResponse($htmlContent, $statusCode);
+    }
+
+    private function processDataBeforeOutput($data) {
+        if (is_array($data)) {
+            foreach ($data as $key => $value) {
+                if ($value instanceof PDOStatement) {
+                    $data[$key] = $value->fetchAll(PDO::FETCH_ASSOC);
+                }
+            }
+        } else if ($data instanceof PDOStatement) {
+            $data = $data->fetchAll(PDO::FETCH_ASSOC);
+        }
+        return $data;
+    }
+
+    private function createView(string $templateName) {
+        $templateType = $this->container->getParameter("template.type");
+        $templateDir = $this->container->getParameter("template.dir");
+        switch ($templateType) {
+            default: return new PhpView($templateDir, $templateName);
+        }
     }
 }

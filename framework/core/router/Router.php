@@ -24,20 +24,21 @@ class Router {
     }
 
     public function match(Request $request) {
-        $uri = $request->getRequestUri();
+        $requestUri = $request->getRequestUri();
+        $purifiedUri = strtok($requestUri, "?");
         $method = $request->getMethod();
 
         foreach ($this->routes->all() as $name => $route) {
-            if ($route->matches($uri, $method)) {
+            if ($route->matches($purifiedUri, $method)) {
                 $this->matchedRoute = $route;
             }
         }
 
         if (null == $this->matchedRoute) {
-            throw new RouteNotFound($uri);
+            throw new RouteNotFound($requestUri);
         }
 
-        $variables = $this->extractUriVariables($uri);
+        $variables = $this->extractUriVariables($purifiedUri);
         $this->matchedRoute->setUriVariables($variables);
         return $this->matchedRoute;
     }
@@ -48,9 +49,12 @@ class Router {
         $routeUriChunks = explode("/", $this->matchedRoute->getUri());
 
         for ($i = 0; $i < count($uriChunks); $i++) {
-            if ($routeUriChunks[$i] != $uriChunks[$i]) {
-                $nameAndType = explode(":", trim($routeUriChunks[$i], "{}"));
-                $variables[$nameAndType[0]] = $this->getVariableOfType($uriChunks[$i], $nameAndType[1]);
+            if ("*" != $routeUriChunks[$i]) {
+                // Извлечение переменной из URI
+                if ($routeUriChunks[$i] != $uriChunks[$i]) {
+                    $nameAndType = explode(":", trim($routeUriChunks[$i], "{}"));
+                    $variables[$nameAndType[0]] = $this->getVariableOfType($uriChunks[$i], $nameAndType[1]);
+                }
             }
         }
 
