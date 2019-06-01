@@ -40,13 +40,16 @@ class Framework {
     }
 
     private function buildController(Route $route) {
-        return $this->container->build(
-            $route->getControllerClass(),
-            [$this->container]
-        );
+        $controllerClass = $route->getControllerClass();
+        $controller = $this->container->build($controllerClass, [$this->container]);
+        if (null === $controller) {
+            throw new FortressException("Controller '" . $controllerClass . "' not found");
+        }
+        return $controller;
     }
 
     private function invokeController($controller, string $methodName, array $arguments) {
+
         return $this->container->invoke($controller, $methodName, $arguments);
     }
 
