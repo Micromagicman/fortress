@@ -1,4 +1,4 @@
-# Fortress framework (v0.1.0)
+# Fortress framework (v0.1.1)
 
 PHP microframework for humans
 
@@ -79,7 +79,7 @@ There are methods of the Controller class that return an http response:
 
 |Method   |Description   |
 | ------------ | ------------ |
-| render(string $html, array $data, int $statusCode)  | Returns response as html. **$data** parameter is required to pass parameters to the template |
+| render(string $templateName, array $data, int $statusCode)  | Returns response as html. **$data** parameter is required to pass parameters to the template |
 | json($data, int $statusCode)  | Returns response as json string |
 | redirect(string $uri)  | Redirects the user to **$url**   |
 

@@ -10,6 +10,7 @@ use fortress\core\router\Route;
 
 use fortress\core\router\Router;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class Framework {
 
@@ -26,7 +27,17 @@ class Framework {
         try {
             $this->configurator->initializeContainer($this->container, $request);
             $route = $this->findRoute($request);
-            return $this->buildAndInvokeController($route);
+            $response = $this->buildAndInvokeController($route);
+            if (!($response instanceof Response)) {
+                throw new FortressException(
+                    sprintf(
+                        "Controller method should return instance of %s class, %s given",
+                        "Symfony\\Component\\HttpFoundation\\Response",
+                        is_object($response) ? get_class($response) : gettype($response)
+                    )
+                );
+            }
+            return $response;
         } catch (RouteNotFound $e) {
             return ErrorResponse::NotFound($e, $this->container);
         } catch (FortressException $e) {

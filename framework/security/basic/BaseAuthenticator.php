@@ -2,6 +2,7 @@
 
 namespace fortress\security\basic;
 
+use fortress\core\exception\UserNotFound;
 use fortress\security\Authenticator;
 use fortress\security\Session;
 use fortress\security\UserProvider;
@@ -18,12 +19,16 @@ class BaseAuthenticator implements Authenticator {
     }
 
     public function authenticate(string $username, string $password) {
-        $user = $this->userProvider->byUsername($username);
-        if (password_verify($password, $user->getPassword())) {
-            $this->session->set("AUTHORIZED_USER", $user->serialize());
-            return true;
+        try {
+            $user = $this->userProvider->byUsername($username);
+            if (password_verify($password, $user->getPassword())) {
+                $this->session->set("AUTHORIZED_USER", $user->serialize());
+                return true;
+            }
+            return false;
+        } catch (UserNotFound $e) {
+            return false;
         }
-        return false;
     }
 
     public function logout() {

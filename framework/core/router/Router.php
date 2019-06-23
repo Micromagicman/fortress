@@ -48,7 +48,7 @@ class Router {
         $uriChunks = explode("/", $uri);
         $routeUriChunks = explode("/", $this->matchedRoute->getUri());
 
-        for ($i = 0; $i < count($uriChunks); $i++) {
+        for ($i = 0; $i < count($routeUriChunks); $i++) {
             if ("*" != $routeUriChunks[$i]) {
                 // Извлечение переменной из URI
                 if ($routeUriChunks[$i] != $uriChunks[$i]) {

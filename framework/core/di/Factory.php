@@ -12,7 +12,6 @@ class Factory extends Resolver {
         if (!class_exists($className)) {
             return null;
         }
-
         try {
             $reflectionObject = new ReflectionClass($className);
             $constructor = $reflectionObject->getConstructor();
@@ -23,7 +22,7 @@ class Factory extends Resolver {
                 return $reflectionObject->newInstanceArgs($arguments);
             }
         } catch (ReflectionException $e) {
-            throw new FortressException("Object creation error", $e);
+            throw new FortressException("Object creation error", $e->getCode(), $e);
         }
     }
 
