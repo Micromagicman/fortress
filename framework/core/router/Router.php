@@ -7,12 +7,21 @@ use Symfony\Component\HttpFoundation\Request;
 
 class Router {
 
-    private $routes;
+    private $uriBuilder;
 
+    private $routes;
     private $matchedRoute;
 
-    public function __construct() {
-        $this->routes = new RouteCollection();
+    public function __construct(
+        UriBuilder $uriBuilder,
+        RouteCollection $routeCollection
+    ) {
+        $this->routes = $routeCollection;
+        $this->uriBuilder = $uriBuilder;
+    }
+
+    public function getRoute(string $name) {
+        return $this->routes->get($name);
     }
 
     public function getRouteCollection() {
@@ -25,46 +34,42 @@ class Router {
 
     public function match(Request $request) {
         $requestUri = $request->getRequestUri();
-        $purifiedUri = strtok($requestUri, "?");
+        $uriChunks = $this->uriBuilder->buildUriChunks($requestUri);
         $method = $request->getMethod();
-
         foreach ($this->routes->all() as $name => $route) {
-            if ($route->matches($purifiedUri, $method)) {
+            if ($route->match($uriChunks, $method)) {
                 $this->matchedRoute = $route;
             }
         }
-
         if (null == $this->matchedRoute) {
             throw new RouteNotFound($requestUri);
         }
-
-        $variables = $this->extractUriVariables($purifiedUri);
+        $variables = $this->extractUriVariables($uriChunks);
         $this->matchedRoute->setUriVariables($variables);
         return $this->matchedRoute;
     }
 
-    private function extractUriVariables(string $uri) {
-        $variables = [];
-        $uriChunks = explode("/", $uri);
-        $routeUriChunks = explode("/", $this->matchedRoute->getUri());
-
-        for ($i = 0; $i < count($uriChunks); $i++) {
-            if ("*" != $routeUriChunks[$i]) {
-                // Извлечение переменной из URI
-                if ($routeUriChunks[$i] != $uriChunks[$i]) {
-                    $nameAndType = explode(":", trim($routeUriChunks[$i], "{}"));
-                    $variables[$nameAndType[0]] = $this->getVariableOfType($uriChunks[$i], $nameAndType[1]);
-                }
-            }
+    public function buildUri(string $routeName, array $params = []) {
+        $route = $this->routes->get($routeName);
+        if (null === $route) {
+            return null;
         }
+        return $this->uriBuilder->buildUri($route, $params);
+    }
 
+    private function extractUriVariables(array $uriChunks) {
+        $uriIndex = 0;
+        $variables = [];
+        foreach ($this->matchedRoute->getChunks() as $key => $value) {
+            if (is_string($key)) {
+                $variables[$key] = $this->getVariableOfType($uriChunks[$uriIndex], $value);
+            }
+            $uriIndex++;
+        }
         return $variables;
     }
 
     private function getVariableOfType($value, string $type) {
-        if ("num" == $type) {
-            return mb_strpos($value, ".") ? floatval($value) : intval($value);
-        }
-        return $value;
+        return "int" === $type ? intval($value) : $value;
     }
 }

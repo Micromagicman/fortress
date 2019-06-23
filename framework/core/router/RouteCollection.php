@@ -8,8 +8,8 @@ class RouteCollection {
 
     public function addPrefix(string $prefix) {
         foreach ($this->routes as $name => $route) {
-            $prevUri = $this->routes[$name]->getUri();
-            $this->routes[$name]->setUri($prefix . $prevUri);
+            $prevUri = $this->routes[$name]->getUriPattern();
+            $this->routes[$name]->setUriPattern($prefix . $prevUri);
         }
     }
 
@@ -19,14 +19,19 @@ class RouteCollection {
         }
     }
 
-    public function add(string $name, string $uri, array $route) {
+    public function add(string $name, string $uriPattern, array $routeConfiguration) {
         $this->routes[$name] = new Route(
             $name,
-            $uri,
-            $route["controller"],
-            $route["action"],
-            $route["methods"] ?? ["*"]
+            $uriPattern,
+            $routeConfiguration["controller"],
+            $routeConfiguration["action"],
+            $routeConfiguration["methods"] ?? ["*"],
+            $routeConfiguration["fuzzy"] ?? false
         );
+    }
+
+    public function get(string $name) {
+        return isset($this->routes[$name]) ? $this->routes[$name] : null;
     }
 
     public function all() {

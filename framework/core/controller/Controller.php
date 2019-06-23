@@ -6,6 +6,7 @@ use fortress\core\database\DatabaseConnection;
 use fortress\core\http\response\HtmlResponse;
 use fortress\core\http\response\JsonResponse;
 use fortress\core\http\response\RedirectResponse;
+use fortress\core\router\Router;
 use fortress\core\view\PhpView;
 use fortress\security\User;
 use PDO;
@@ -55,8 +56,13 @@ abstract class Controller {
         return $this->container->getParameterOrDefault($name, $defaultValue);
     }
 
-    protected function redirect(string $url) {
-        return new RedirectResponse($url);
+    protected function redirect(string $to, array $uriParams = []) {
+        $router = $this->container->get(Router::class);
+        $uri = $router->buildUri($to, $uriParams);
+        if (null !== $uri) {
+            return new RedirectResponse($uri);
+        }
+        return new RedirectResponse($to);
     }
 
     protected function json($data, int $statusCode = 200) {

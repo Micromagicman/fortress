@@ -14,7 +14,6 @@ use Symfony\Component\HttpFoundation\Request;
 class Framework {
 
     private $container;
-
     private $configurator;
 
     public function __construct(Configurator $configurator, $container) {
@@ -49,7 +48,6 @@ class Framework {
     }
 
     private function invokeController($controller, string $methodName, array $arguments) {
-
         return $this->container->invoke($controller, $methodName, $arguments);
     }
 

@@ -2,60 +2,64 @@
 
 namespace fortress\core\router;
 
+use fortress\core\exception\RouteException;
+
 class Route {
 
-    private const URI_PATTERNS = [
-        "/\{[a-zA-Z]+:num\}/" => "[0-9]+(\.[0-9]+)?", // Число
-        "/\{[a-zA-Z]+:str\}/" => "[-.,;_a-zA-Zа-яА-Я]+", // Строка
-        "/\*/" => ".*" // Любой под-маршрут
+    private static $URI_PARAMETER_PATTERNS = [
+        "int" => "/[0-9]+(\.[0-9]+)?/", // Число
+        "str" => "/[-.,;_a-zA-Zа-яА-Я]+/" // Строка
     ];
 
     private $name;
 
-    private $uri;
-
-    private $uriRegex;
-
-    private $requestMethods;
+    private $uriPattern;
+    private $requestMethods = [];
+    private $chunks = [];
+    private $uriVariables = [];
+    private $fuzzy;
 
     private $controllerClass;
-
     private $actionName;
 
-    private $uriVariables = [];
-
     public function __construct(
-        string $name, 
-        string $uri,
-        string $controllerClass, 
-        string $actionName, 
-        array $requestMethods = ["*"]
+        string $name,
+        string $uriPattern,
+        string $controllerClass,
+        string $actionName,
+        array $requestMethods = ["*"],
+        bool $fuzzy = false
     ) {
         $this->name = $name;
-        $this->uri = $uri;
-        $this->uriRegex = $this->createUrlRegex($uri);
+        $this->uriPattern = $uriPattern;
+        $this->fuzzy = $fuzzy;
         $this->controllerClass = $controllerClass;
         $this->actionName = $actionName;
-        $this->requestMethods = array_map(function($m) {
+        $this->refreshChunks($uriPattern);
+        $this->requestMethods = array_map(function ($m) {
             return mb_strtoupper($m);
         }, $requestMethods);
     }
 
-    public function getUri() {
-        return $this->uri;
+    public function getUriPattern() {
+        return $this->uriPattern;
     }
 
-    public function setUri(string $uri) {
-        $this->uri = $uri;
-        $this->uriRegex = $this->createUrlRegex($uri);
+    public function setUriPattern(string $uriPattern) {
+        $this->uriPattern = $uriPattern;
+        $this->refreshChunks($uriPattern);
+    }
+
+    public function getChunks() {
+        return $this->chunks;
     }
 
     public function getUriVariables() {
         return $this->uriVariables;
     }
 
-    public function setUriVariables(array $variables) {
-        $this->uriVariables = $variables;
+    public function setUriVariables(array $uriVariables = []) {
+        $this->uriVariables = $uriVariables;
     }
 
     public function getControllerClass() {
@@ -67,35 +71,56 @@ class Route {
     }
 
     public function isValidRequestMethod(string $method) {
-        return $this->satisfiesAnyRequestMethod() || in_array($method, $this->requestMethods); 
+        return $this->satisfiesAnyRequestMethod() || in_array($method, $this->requestMethods);
     }
 
     public function satisfiesAnyRequestMethod() {
         return count($this->requestMethods) === 1 && $this->requestMethods[0] === "*";
     }
 
-    public function matches(string $uri, string $method = "GET") {
-        return $this->isValidRequestMethod($method) && preg_match($this->uriRegex, $uri);
+    public function match(array $uriChunks, string $method = "GET") {
+        if (!$this->isValidRequestMethod($method)) {
+            return false;
+        }
+        $uriIndex = 0;
+        if (count($uriChunks) < count($this->chunks)) {
+            return false;
+        }
+        if (!$this->fuzzy && count($uriChunks) !== count($this->chunks)) {
+            return false;
+        }
+        foreach ($this->chunks as $key => $value) {
+            // Проверка статичных частей роута
+            if (is_int($key) && $value !== $uriChunks[$uriIndex]) {
+                return false;
+            }
+            // Проверка параметров роутера
+            if (is_string($key) && !preg_match(static::$URI_PARAMETER_PATTERNS[$value], $uriChunks[$uriIndex])) {
+                return false;
+            }
+            $uriIndex++;
+        }
+        return true;
     }
 
-    private function createUrlRegex(string $uri) {
-        $uriChunks = explode("/", $uri);
-        $regexChunks = [];
-        if ("*" == $uriChunks[count($uriChunks) - 1]) {
-            $uriChunks[count($uriChunks) - 1] = "?*";
-        }
-        foreach ($uriChunks as $uriChunk) {
-            $regexChunks[] = $this->replacePatternIfExists($uriChunk);
-        }
-        return "/^". implode("\/", $regexChunks)  . "$/";
-    }
-
-    private function replacePatternIfExists(string $uriChunk) {
-        foreach (self::URI_PATTERNS as $pattern => $varRegex) {
-            if (preg_match($pattern, $uriChunk)) {
-                return preg_replace($pattern, $varRegex, $uriChunk);
+    private function refreshChunks(string $uri) {
+        $this->chunks = [];
+        $uriChunks = explode("/", trim($uri, "/"));
+        foreach ($uriChunks as $chunk) {
+            if (empty($chunk)) {
+                continue;
+            }
+            // Извлечение имени и типа параметра роута
+            if ("{" === $chunk[0] && "}" === $chunk[mb_strlen($chunk) - 1]) {
+                $uriParameterPattern = trim($chunk, "{}");
+                $uriParameter = explode(":", $uriParameterPattern);
+                if (count($uriParameter) < 2 || !array_key_exists($uriParameter[1], static::$URI_PARAMETER_PATTERNS)) {
+                    throw new RouteException("Uri parameter pattern should look like {name:type}");
+                }
+                $this->chunks[$uriParameter[0]] = $uriParameter[1];
+            } else {
+                $this->chunks[] = $chunk;
             }
         }
-        return $uriChunk;
     }
 }
