@@ -14,7 +14,6 @@ class ParameterConfiguration extends Configuration {
         $container->setParameter("template.type", self::TEMPLATE_TYPE);
         $container->setParameter("template.404", self::TEMPLATE_404_NAME);
         $container->setParameter("template.dir", realpath(self::TEMPLATES_DIR));
-
         foreach ($configs as $config) {
             if ($config instanceof ConfigurationBag) {
                 foreach ($this->flatConfiguration($config->items()) as $key => $value) {

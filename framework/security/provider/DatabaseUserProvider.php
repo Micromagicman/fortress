@@ -8,47 +8,35 @@ use fortress\security\basic\BaseUser;
 use fortress\security\RoleProvider;
 use fortress\security\UserProvider;
 
-class DatabaseUserProvider implements UserProvider {
+class DatabaseUserProvider extends UserProvider {
 
     private $dbConnection;
 
-    private $roleProvider;
-
     public function __construct(DatabaseConnection $connection, RoleProvider $roleProvider) {
+        parent::__construct($roleProvider);
         $this->dbConnection = $connection;
-        $this->roleProvider = $roleProvider;
     }
 
     public function byUsername(string $username) {
-        $userData = $this->fetchOneOrNull($username);
+        $userData = $this->fetchUser($username);
         if (null == $userData) {
             throw new UserNotFound($username);
         }
         return new BaseUser(
-            $userData["id"],
-            $userData["username"],
-            $userData["email"],
-            $userData["password"],
-            $this->mapRoles($userData["role"])
+            $userData->id,
+            $userData->username,
+            $userData->email,
+            $userData->password,
+            $this->mapRoles($userData->role)
         );
     }
 
-    private function fetchOneOrNull(string $username) {
-        $selectStatement = $this->dbConnection->query(
-            "SELECT id, username, email, password, role FROM f_user WHERE username=:username",
-            ["username" => $username]
-        );
-        $matches = $selectStatement->fetchAll();
-        return count($matches) > 0 ? $matches[0] : null;
-    }
-
-    private function mapRoles(int $rolesCode) {
-        $userRoles = [];
-        foreach ($this->roleProvider->getRoleMap() as $rCode => $rName) {
-            if (($rolesCode & $rCode) == $rCode) {
-                $userRoles[] = $rName;
-            }
-        }
-        return $userRoles;
+    private function fetchUser(string $username) {
+        return $this->dbConnection
+            ->query(
+                "SELECT id, username, email, password, role FROM f_user WHERE username=:username",
+                ["username" => $username]
+            )
+            ->fetchSingle();
     }
 }
