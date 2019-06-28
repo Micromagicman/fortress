@@ -7,9 +7,15 @@ class RouteCollection {
     private $routes = [];
 
     public function addPrefix(string $prefix) {
-        foreach ($this->routes as $name => $route) {
-            $prevUri = $this->routes[$name]->getUriPattern();
-            $this->routes[$name]->setUriPattern($prefix . $prevUri);
+        foreach ($this->routes as $route) {
+            $prevUri = $route->getUriPattern();
+            $route->setUriPattern($prefix . $prevUri);
+        }
+    }
+
+    public function addMiddleware(string $middlewareClass) {
+        foreach ($this->routes as $route) {
+            $route->setMiddlewareClass($middlewareClass);
         }
     }
 
@@ -25,6 +31,7 @@ class RouteCollection {
             $uriPattern,
             $routeConfiguration["controller"],
             $routeConfiguration["action"],
+            $routeConfiguration["middleware"] ?? null,
             $routeConfiguration["methods"] ?? ["*"],
             $routeConfiguration["fuzzy"] ?? false
         );

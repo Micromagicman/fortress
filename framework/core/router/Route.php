@@ -21,12 +21,14 @@ class Route {
 
     private $controllerClass;
     private $actionName;
+    private $middlewareClass;
 
     public function __construct(
         string $name,
         string $uriPattern,
         string $controllerClass,
         string $actionName,
+        string $middlewareClass = null,
         array $requestMethods = ["*"],
         bool $fuzzy = false
     ) {
@@ -35,6 +37,7 @@ class Route {
         $this->fuzzy = $fuzzy;
         $this->controllerClass = $controllerClass;
         $this->actionName = $actionName;
+        $this->middlewareClass = $middlewareClass;
         $this->refreshChunks($uriPattern);
         $this->requestMethods = array_map(function ($m) {
             return mb_strtoupper($m);
@@ -68,6 +71,14 @@ class Route {
 
     public function getActionName() {
         return $this->actionName;
+    }
+
+    public function getMiddlewareClass() {
+        return $this->middlewareClass;
+    }
+
+    public function setMiddlewareClass(string $middlewareClass) {
+        $this->middlewareClass = $middlewareClass;
     }
 
     public function isValidRequestMethod(string $method) {
