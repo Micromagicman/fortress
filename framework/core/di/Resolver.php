@@ -18,8 +18,13 @@ class Resolver {
         $arguments = [];
         foreach ($parameters as $p) {
             $cls = $p->getClass();
-            if (null != $cls) {
+            if (null !== $cls) {
                 $arguments[] = $this->container->get($cls->getName());
+            } else {
+                $parameterByName = $this->container->getParameter($p->getName());
+                if (null !== $parameterByName) {
+                    $arguments[] = $parameterByName;
+                }
             }
         }
         return $arguments;

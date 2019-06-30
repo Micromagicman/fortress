@@ -8,13 +8,10 @@ use Psr\Container\ContainerInterface;
 class ServiceContainer implements ContainerInterface {
 
     private $factory;
-
     private $invoker;
 
     private $storage = [];
-
     private $objectCache = [];
-
     private $parameters = [];
 
     public function __construct() {
@@ -38,14 +35,12 @@ class ServiceContainer implements ContainerInterface {
         if (array_key_exists($id, $this->objectCache)) {
             return $this->objectCache[$id];
         }
-
         if (array_key_exists($id, $this->storage)) {
             $obj = $this->build($this->storage[$id]);
             $this->objectCache[$id] = $obj;
             unset($this->storage[$id]);
             return $obj;
         }
-
         if (class_exists($id)) {
             $object = $this->getByClassName($id);
             if (null == $object) {
@@ -54,7 +49,6 @@ class ServiceContainer implements ContainerInterface {
             }
             return $object;
         }
-
         throw new DependencyNotFound($id);
     }
 

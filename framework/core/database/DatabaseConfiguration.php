@@ -7,15 +7,10 @@ use fortress\core\configurator\ConfigurationBag;
 class DatabaseConfiguration {
 
     private $driver;
-
     private $host;
-
     private $port;
-
     private $databaseName;
-
     private $username;
-
     private $password;
 
     private function __construct(ConfigurationBag $configuration) {

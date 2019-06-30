@@ -15,7 +15,6 @@ use Symfony\Component\HttpFoundation\Response;
 class Framework {
 
     private $container;
-
     private $configurator;
 
     public function __construct(Configurator $configurator, $container) {
@@ -52,23 +51,31 @@ class Framework {
 
     private function buildController(Route $route) {
         $controllerClass = $route->getControllerClass();
-        $controller = $this->container->build($controllerClass, [$this->container]);
+        $controller = $this->container->build($controllerClass);
         if (null === $controller) {
             throw new FortressException("Controller '" . $controllerClass . "' not found");
         }
         return $controller;
     }
 
-    private function invokeController($controller, string $methodName, array $arguments) {
-
-        return $this->container->invoke($controller, $methodName, $arguments);
+    private function buildAndInvokeController(Route $route) {
+        $request = $this->container->get(Request::class);
+        $middlewareClass = $route->getMiddlewareClass();
+        $controllerClosure = $this->createControllerInvokeClosure($route);
+        if (null !== $middlewareClass) {
+            $middleware = $this->container->build($middlewareClass);
+            return $middleware->handle($controllerClosure);
+        }
+        return $controllerClosure($request);
     }
 
-    private function buildAndInvokeController(Route $route) {
-        return $this->invokeController(
-            $this->buildController($route),
-            $route->getActionName(),
-            $route->getUriVariables()
-        );
+    private function createControllerInvokeClosure($route) {
+        return function() use ($route) {
+            return $this->container->invoke(
+                $this->buildController($route),
+                $route->getActionName(),
+                $route->getUriVariables()
+            );
+        };
     }
 }

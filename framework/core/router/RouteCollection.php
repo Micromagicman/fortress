@@ -7,9 +7,15 @@ class RouteCollection {
     private $routes = [];
 
     public function addPrefix(string $prefix) {
-        foreach ($this->routes as $name => $route) {
-            $prevUri = $this->routes[$name]->getUri();
-            $this->routes[$name]->setUri($prefix . $prevUri);
+        foreach ($this->routes as $route) {
+            $prevUri = $route->getUriPattern();
+            $route->setUriPattern($prefix . $prevUri);
+        }
+    }
+
+    public function addMiddleware(string $middlewareClass) {
+        foreach ($this->routes as $route) {
+            $route->setMiddlewareClass($middlewareClass);
         }
     }
 
@@ -19,14 +25,20 @@ class RouteCollection {
         }
     }
 
-    public function add(string $name, string $uri, array $route) {
+    public function add(string $name, string $uriPattern, array $routeConfiguration) {
         $this->routes[$name] = new Route(
             $name,
-            $uri,
-            $route["controller"],
-            $route["action"],
-            $route["methods"] ?? ["*"]
+            $uriPattern,
+            $routeConfiguration["controller"],
+            $routeConfiguration["action"],
+            $routeConfiguration["middleware"] ?? null,
+            $routeConfiguration["methods"] ?? ["*"],
+            $routeConfiguration["fuzzy"] ?? false
         );
+    }
+
+    public function get(string $name) {
+        return isset($this->routes[$name]) ? $this->routes[$name] : null;
     }
 
     public function all() {
