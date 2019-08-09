@@ -52,6 +52,10 @@ abstract class Controller {
         return $this->user;
     }
 
+    protected function userIp() {
+        return $this->request->getClientIp();
+    }
+
     protected function parameter(string $name, $defaultValue = null) {
         return $this->container->getParameterOrDefault($name, $defaultValue);
     }
