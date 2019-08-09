@@ -11,26 +11,20 @@ use PDOException;
 
 class DatabaseConnection {
 
+    private $configuration;
     private $driver;
     private $connection;
 
     private $lastQuery;
 
     public function __construct(DatabaseConfiguration $configuration = null) {
-        try {
-            if (null === $configuration) {
-                throw new FortressException("There is no database configuration in the framework settings");
-            }
-            $this->driver = Driver::createDriver($configuration->driverName());
-            $this->connection = $this->driver->createConnection($configuration);
-        } catch (PDOException $e) {
-            throw new DatabaseConnectionError("Failed to create PDO connection", $e);
-        } catch (DatabaseConnectionError $e) {
-            throw $e;
-        }
+        $this->configuration = $configuration;
     }
 
     public function query(string $sql, array $binds = []) {
+        if (null === $this->connection) {
+            $this->connect();
+        }
         $this->lastQuery = null;
         $statement = $this->connection->prepare($sql);
         if (!$statement || !$statement->execute($binds)) {
@@ -75,5 +69,19 @@ class DatabaseConnection {
             $this->connection->rollBack();
         }
         return $this;
+    }
+
+    private function connect() {
+        try {
+            if (null === $this->configuration) {
+                throw new FortressException("There is no database configuration in the framework settings");
+            }
+            $this->driver = Driver::createDriver($this->configuration->driverName());
+            $this->connection = $this->driver->createConnection($this->configuration);
+        } catch (PDOException $e) {
+            throw new DatabaseConnectionError("Failed to create PDO connection", $e);
+        } catch (DatabaseConnectionError $e) {
+            throw $e;
+        }
     }
 }
