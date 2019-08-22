@@ -73,11 +73,11 @@ class Route {
         return $this->actionName;
     }
 
-    public function getMiddlewareClass() {
+    public function getMiddleware() {
         return $this->middlewareClass;
     }
 
-    public function setMiddlewareClass(string $middlewareClass) {
+    public function setMiddleware(string $middlewareClass) {
         $this->middlewareClass = $middlewareClass;
     }
 

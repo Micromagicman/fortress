@@ -60,7 +60,7 @@ class Framework {
 
     private function buildAndInvokeController(Route $route) {
         $request = $this->container->get(Request::class);
-        $middlewareClass = $route->getMiddlewareClass();
+        $middlewareClass = $route->getMiddleware();
         $controllerClosure = $this->createControllerInvokeClosure($route);
         if (null !== $middlewareClass) {
             $middleware = $this->container->build($middlewareClass);

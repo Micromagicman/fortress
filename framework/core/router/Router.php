@@ -21,7 +21,7 @@ class Router {
     }
 
     public function getRoute(string $name) {
-        return $this->routes->get($name);
+        return $this->routes->getRouteByName($name);
     }
 
     public function getRouteCollection() {
@@ -50,7 +50,7 @@ class Router {
     }
 
     public function buildUri(string $routeName, array $params = []) {
-        $route = $this->routes->get($routeName);
+        $route = $this->routes->getRouteByName($routeName);
         if (null === $route) {
             return null;
         }

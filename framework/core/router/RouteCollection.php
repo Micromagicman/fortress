@@ -2,6 +2,8 @@
 
 namespace fortress\core\router;
 
+use InvalidArgumentException;
+
 class RouteCollection {
 
     private $routes = [];
@@ -26,7 +28,7 @@ class RouteCollection {
     }
 
     public function add(string $name, string $uriPattern, array $routeConfiguration) {
-        $this->routes[$name] = new Route(
+        $route = new Route(
             $name,
             $uriPattern,
             $routeConfiguration["controller"],
@@ -35,13 +37,39 @@ class RouteCollection {
             $routeConfiguration["methods"] ?? ["*"],
             $routeConfiguration["fuzzy"] ?? false
         );
+        $this->routes[$name] = $route;
+        return $route;
     }
 
-    public function get(string $name) {
+    public function getRouteByName(string $name) {
         return isset($this->routes[$name]) ? $this->routes[$name] : null;
     }
 
     public function all() {
         return $this->routes;
+    }
+
+    public function __call($name, $arguments) {
+        $nameUpper = strtoupper($name);
+        if (!in_array($nameUpper, ["GET", "POST", "PUT", "DELETE", "PATCH"])) {
+            throw new InvalidArgumentException("Method '$nameUpper' is not allowed!");
+        }
+        if (count($arguments) < 3) {
+            throw new InvalidArgumentException("Method '$nameUpper' is not allowed!");
+        }
+        $controller = $arguments[2];
+        if (is_string($controller)) {
+            list($controllerClass, $action) = explode("::", $controller);
+            return $this->add(
+                $arguments[0], // Route name
+                $arguments[1], // Route uriPattern
+                [
+                    "controller" => $controllerClass,
+                    "action" => $action,
+                    "methods" => [$nameUpper]
+                ]
+            );
+        }
+        return null;
     }
 }

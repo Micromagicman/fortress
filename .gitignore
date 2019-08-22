@@ -4,6 +4,7 @@
 /public/
 /test/
 /templates/
+/app/
 
 .DS_Store
 *.lock
