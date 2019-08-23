@@ -8,12 +8,8 @@ use Symfony\Component\HttpFoundation\Request;
 
 session_start();
 
-// Чтение конфига
-$configurator = new Configurator();
-$container = new ServiceContainer();
-
 // Создание объекта фреймворка
-$fortress = new Framework($configurator, $container);
+$fortress = new Framework();
 
 // Обработка запроса
 $request = Request::createFromGlobals();
