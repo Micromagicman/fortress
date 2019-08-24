@@ -33,25 +33,38 @@ class CreateAppCommand extends Command {
      * Запуск консольной команды с арегументами
      */
     public function run() {
-        echo "Initialize configuration";
+        $this->writeWithData("Initialize configuration directory");
         $this->copyDirectory(
             __DIR__ . "/../../environment/config",
             getcwd() . "/config"
         );
-        echo "\nInitialize public dir";
+        $this->writeWithData("Initialize public directory");
         $this->copyDirectory(
             __DIR__ . "/../../environment/public",
             getcwd() . "/public"
         );
-        echo "\nInitialize templates";
+        $this->writeWithData("Initialize templates directory");
         $this->copyDirectory(
             __DIR__ . "/../../environment/templates",
             getcwd() . "/templates"
+        );
+        $this->writeWithData("Initialize app directory");
+        $this->copyDirectory(
+            __DIR__ . "/../../environment/app",
+            getcwd() . "/app"
         );
         file_put_contents(
             getcwd() . "/bootstrap.php",
             file_get_contents(__DIR__ . "/../../environment/bootstrap.php")
         );
+        $this->writeWithData("Update composer.json");
+        $composerConfig = json_decode(file_get_contents(getcwd() . "/composer.json"), true);
+        $composerConfig["autoload"]["psr-4"]["app\\"] = "app/";
+        file_put_contents(
+            getcwd() . "/composer.json",
+            json_encode($composerConfig, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+        );
+        exec("composer install");
         echo "\nDone.";
     }
 
@@ -79,4 +92,13 @@ class CreateAppCommand extends Command {
         }
         closedir($sourceDirResource);
     }
+
+    /**
+     * Вывод строки с текущим временем в stdOut
+     * @param string $line
+     */
+    private function writeWithData(string $line) {
+        echo "[" . date("Y-m-d, H:i") . "] " . $line . "\n";
+    }
+
 }

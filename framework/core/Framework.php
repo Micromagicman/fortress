@@ -2,27 +2,59 @@
 
 namespace fortress\core;
 
+use fortress\command\Command;
 use fortress\core\configurator\Configurator;
+use fortress\core\di\ServiceContainer;
 use fortress\core\exception\FortressException;
 use fortress\core\exception\RouteNotFound;
 use fortress\core\http\response\ErrorResponse;
 use fortress\core\router\Route;
 
 use fortress\core\router\Router;
+use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Class Framework
+ * @package fortress\core
+ */
 class Framework {
 
     private $container;
     private $configurator;
 
-    public function __construct(Configurator $configurator, $container) {
-        $this->container = $container;
-        $this->configurator = $configurator;
+    public function __construct() {
+        $this->container = new ServiceContainer();
+        $this->configurator = new Configurator();
     }
 
-    public function run(Request $request) {
+    /**
+     * @param $runnable
+     * @return ErrorResponse|mixed
+     */
+    public function run($runnable) {
+        if ($runnable instanceof Command) {
+            return $this->runFromCommand($runnable);
+        } else if ($runnable instanceof Request) {
+            return $this->runFromHttpRequest($runnable);
+        }
+        throw new InvalidArgumentException(
+            sprintf(
+                "Incorrect runnable instance %s or %s expected, %s given",
+                Request::class,
+                Command::class,
+                is_object($runnable) ? get_class($runnable) : gettype($runnable)
+            )
+        );
+    }
+
+    private function runFromCommand(Command $command) {
+        $command->run();
+        return true;
+    }
+
+    private function runFromHttpRequest(Request $request) {
         try {
             $this->configurator->initializeContainer($this->container, $request);
             $route = $this->findRoute($request);
@@ -31,7 +63,7 @@ class Framework {
                 throw new FortressException(
                     sprintf(
                         "Controller method should return instance of %s class, %s given",
-                        "Symfony\\Component\\HttpFoundation\\Response",
+                        Response::class,
                         is_object($response) ? get_class($response) : gettype($response)
                     )
                 );
