@@ -1,59 +1,43 @@
-# Fortress framework (v0.2.0)
+# Fortress framework (v0.3.0)
 
 PHP microframework for humans
 
-## New in v0.2.0
+## Installation
 
-### Security
-Configuration user provider
-Now you can define the users of your system directly in the config/security.php configuration file.
-Thus, 2 user providers are now available:
-|Provider  |Aliases   |
-| ------------ | ------------ |
-|fortress\security\provider\DatabaseUserProvider |db, database |
-|fortress\security\provider\ConfigurationUserProvider |conf, config, configuration |
-
-```php
-// config/security.php
-
-return [
-    "user" => [
-        "model" => "fortress\security\basic\BaseUser",
-        "provider" => "conf" // Specify user provider
-    ],
-    "role" => [
-        "provider" => "fortress\security\basic\BaseRoleProvider"
-    ],
-    "users" => [ // Create users. Each user must have email, password, role fields. Username is key of this array
-        "evgen" => [
-            "email" => "evgen@micromagicman.ru",
-            "password" => 'someHashOfPassword',
-            "role" => 62
-        ]
-    ]
-];
+```
+composer require micromagicman/fortress
+./vendor/bin/fortress
 ```
 
-### Authentication Errors class
-A class that stores the latest authentication request errors for the next request
+## New in v0.3.0
+
+### Routing
+
+Now you can add routes based on their http methods
 ```php
-    public function auth(AuthenticationErrors $authenticationErrors) {
-        if ($this->user()->is("ROLE_ADMIN")) {
-            return $this->redirect("admin.app");
-        }
-        return $this->render("admin/login", [
-            "authErrors" => $authenticationErrors->getLastErrors()
-        ]);
-    }
+$routeCollection->get("welcome", "/", "app\controller\IndexController::welcome")
+						 ->setMiddleware("app\middleware\BaseMiddleware");
 ```
-### Controller
-Controller::redirect method can now take name of route as a parameter
+
+### Command interface
+
+Ability to run fortress via console php scripts.
+Each command passed to run the framework must inherit from fortress\command\Command class.
+
+```php
+$fortress = new fortress\core\Framework();
+$fortress->run(new fortress\command\CreateAppCommand());
+```
+
 ### Database
-create/commit/rollBack transactions
+Lazy database connection
+
 ### Also
 - Router completely rewritten
 - Some bug fixes & optimizations
 
+### Environment
+Initialize the environment using vendor/bin/fortress script
 
 ## Installation
 
@@ -128,6 +112,7 @@ class AdminController extends Controller {
     }
 }
 ```
+
 There are methods of the Controller class that return an http response:
 
 |Method   |Description   |
@@ -173,5 +158,49 @@ class SomeService {
         // ...
     }
 }
+```
 
+## Security
+Configuration user provider
+You can define the users of your system directly in the config/security.php configuration file.
+Thus, 2 user providers are now available:
+
+|Provider  |Aliases   |
+| ------------ | ------------ |
+|fortress\security\provider\DatabaseUserProvider |db, database |
+|fortress\security\provider\ConfigurationUserProvider |conf, config, configuration |
+
+```php
+// config/security.php
+
+return [
+    "user" => [
+        "model" => "fortress\security\basic\BaseUser",
+        "provider" => "conf" // Specify user provider
+    ],
+    "role" => [
+        "provider" => "fortress\security\basic\BaseRoleProvider"
+    ],
+    "users" => [ // Create users. Each user must have email, password, role fields. Username is key of this array
+        "evgen" => [
+            "email" => "evgen@micromagicman.ru",
+            "password" => 'someHashOfPassword',
+            "role" => 62
+        ]
+    ]
+];
+```
+
+### Authentication Errors class
+A class that stores the latest authentication request errors for the next request
+
+```php
+    public function auth(AuthenticationErrors $authenticationErrors) {
+        if ($this->user()->is("ROLE_ADMIN")) {
+            return $this->redirect("admin.app");
+        }
+        return $this->render("admin/login", [
+            "authErrors" => $authenticationErrors->getLastErrors()
+        ]);
+    }
 ```
