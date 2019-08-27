@@ -16,7 +16,7 @@ composer require micromagicman/fortress
 Now you can add routes based on their http methods
 ```php
 $routeCollection->get("welcome", "/", "app\controller\IndexController::welcome")
-						 ->setMiddleware("app\middleware\BaseMiddleware");
+				->setMiddleware("app\middleware\BaseMiddleware");
 ```
 
 ### Command interface
@@ -33,7 +33,6 @@ $fortress->run(new fortress\command\CreateAppCommand());
 Lazy database connection
 
 ### Also
-- Router completely rewritten
 - Some bug fixes & optimizations
 
 ### Environment
@@ -60,14 +59,14 @@ return function(RouteCollection $rc) {
         "action" => "main" // method name
     ]);
 };
+```
 
+```php
+<?php
 /*
  * OR create several factories
  * To separate logically related routes
 */
-
-<?php
-
 return [
     function(RouteCollection $rc) {
         // Site page routes
@@ -195,12 +194,12 @@ return [
 A class that stores the latest authentication request errors for the next request
 
 ```php
-    public function auth(AuthenticationErrors $authenticationErrors) {
-        if ($this->user()->is("ROLE_ADMIN")) {
-            return $this->redirect("admin.app");
-        }
-        return $this->render("admin/login", [
-            "authErrors" => $authenticationErrors->getLastErrors()
-        ]);
+public function auth(AuthenticationErrors $authenticationErrors) {
+    if ($this->user()->is("ROLE_ADMIN")) {
+        return $this->redirect("admin.app");
     }
+    return $this->render("admin/login", [
+        "authErrors" => $authenticationErrors->getLastErrors()
+    ]);
+}
 ```
