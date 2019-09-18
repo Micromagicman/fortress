@@ -1,4 +1,4 @@
-# Fortress framework (v0.3.1)
+# Fortress framework (v0.3.2)
 
 PHP microframework for humans
 
