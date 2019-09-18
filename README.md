@@ -38,12 +38,6 @@ Lazy database connection
 ### Environment
 Initialize the environment using vendor/bin/fortress script
 
-## Installation
-
-```
-composer require micromagicman/fortress
-```
-
 ### Routing
 
 Create config/routes.php file to define routes
@@ -118,7 +112,7 @@ There are methods of the Controller class that return an http response:
 | ------------ | ------------ |
 | render(string $templateName, array $data, int $statusCode)  | Returns response as html. **$data** parameter is required to pass parameters to the template |
 | json($data, int $statusCode)  | Returns response as json string |
-| redirect(string ($uri | $routeName))  | Redirects the user to **$uri**   |
+| redirect(string ($uri or $routeName))  | Redirects the user to **$uri**   |
 
 ### Database
 
