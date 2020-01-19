@@ -31,6 +31,7 @@ class Router {
     }
 
     /**
+     * Поиск подходящего для заданного пути и HTTP-метода маршрута
      * @param string $uri
      * @param string $method
      * @return Route|mixed
@@ -68,7 +69,7 @@ class Router {
     private function extractUriVariables(array $uriChunks) {
         $uriIndex = 0;
         $variables = [];
-        foreach ($this->matchedRoute->getChunks() as $key => $value) {
+        foreach ($this->matchedRoute->getPathChunks() as $key => $value) {
             if (is_string($key)) {
                 $variables[$key] = $this->getVariableOfType($uriChunks[$uriIndex], $value);
             }

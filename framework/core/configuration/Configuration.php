@@ -2,10 +2,7 @@
 
 namespace fortress\core\configuration;
 
-use fortress\core\di\loader\MapLoader;
-use fortress\core\router\RouteCollection;
 use fortress\util\common\StringUtils;
-use Psr\Http\Message\ServerRequestInterface;
 
 class Configuration {
 
@@ -63,10 +60,10 @@ class Configuration {
     }
 
     /**
-     * @param ServerRequestInterface $request
+     * Загрузка параметров из конфигурационных файлов
      * @return array
      */
-    public static function configure(ServerRequestInterface $request) {
+    public static function configure() {
         $configurations = [];
         foreach ([
                      self::DATABASE_CONFIGURATION_NAME,
@@ -78,27 +75,6 @@ class Configuration {
                 $configurations[] = self::loadConfiguration($configFile);
             } catch (ConfigurationNotFoundException $e) {}
         }
-        $configurations[] = new MapLoader([
-            ServerRequestInterface::class => $request,
-            RouteCollection::class => self::configureRoutes()
-        ]);
         return $configurations;
-    }
-
-    public static function configureRoutes() {
-        $routeCollection = new RouteCollection();
-        try {
-            $routes = self::loadConfiguration(self::ROUTES_CONFIGURATION_NAME);
-            if (is_array($routes)) {
-                foreach ($routes as $routeInitializer) {
-                    if (is_callable($routeInitializer)) {
-                        $routeInitializer($routeCollection);
-                    }
-                }
-            } else if (is_callable($routes)) {
-                $routes($routeCollection);
-            }
-        } catch (ConfigurationNotFoundException $e) {}
-        return $routeCollection;
     }
 }

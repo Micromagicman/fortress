@@ -2,6 +2,7 @@
 
 namespace fortress\core\router;
 
+use fortress\core\Action;
 use fortress\core\exception\RouteException;
 
 class Route {
@@ -37,7 +38,7 @@ class Route {
      * Части path (Пример: path = /api/1/test -> chunks = {api, 1, test})
      * @var array
      */
-    private array $chunks = [];
+    private array $pathChunks = [];
 
     /**
      * Переменные, определенные в пути
@@ -53,9 +54,15 @@ class Route {
 
     /**
      * Класс промежуточного кода, который соответсвует данному маршруту
-     * @var string
+     * @var array
      */
-    private string $middlewareClass;
+    private array $beforeActions = [];
+
+    /**
+     * Класс промежуточного кода, который соответсвует данному маршруту
+     * @var array
+     */
+    private array $afterActions = [];
 
     /**
      * Является ли данный маршрут "расширяемым".
@@ -73,30 +80,32 @@ class Route {
         string $name,
         string $uriPattern,
         string $controllerClass,
-        string $middlewareClass,
         array $requestMethods = ["*"],
+        array $beforeActions = [],
+        array $afterActions = [],
         bool $fuzzy = false
     ) {
         $this->name = $name;
         $this->pathPattern = $uriPattern;
-        $this->fuzzy = $fuzzy;
         $this->controllerClass = $controllerClass;
-        $this->middlewareClass = $middlewareClass;
+        $this->afterActions = $afterActions;
+        $this->beforeActions = $beforeActions;
+        $this->fuzzy = $fuzzy;
         $this->requestMethods = $this->prepareRequestMethods($requestMethods);
         $this->refreshChunks($uriPattern);
     }
 
-    public function getUriPattern() {
+    public function getPathPattern() {
         return $this->pathPattern;
     }
 
-    public function setUriPattern(string $uriPattern) {
-        $this->pathPattern = $uriPattern;
-        $this->refreshChunks($uriPattern);
+    public function setPathPattern(string $pathPattern) {
+        $this->pathPattern = $pathPattern;
+        $this->refreshChunks($pathPattern);
     }
 
-    public function getChunks() {
-        return $this->chunks;
+    public function getPathChunks() {
+        return $this->pathChunks;
     }
 
     public function getPathVariables() {
@@ -111,12 +120,24 @@ class Route {
         return $this->controllerClass;
     }
 
-    public function getMiddleware() {
-        return $this->middlewareClass;
+    public function getBeforeActions() {
+        return $this->beforeActions;
     }
 
-    public function setMiddlewareClass(string $middlewareClass) {
-        $this->middlewareClass = $middlewareClass;
+    public function addBeforeActions(string... $actions) {
+        foreach ($actions as $action) {
+            $this->beforeActions[] = $action;
+        }
+    }
+
+    public function getAfterActions() {
+        return $this->afterActions;
+    }
+
+    public function addAfterActions(string... $actions) {
+        foreach ($actions as $action) {
+            $this->afterActions[] = $action;
+        }
     }
 
     public function isValidRequestMethod(string $method) {
@@ -132,13 +153,13 @@ class Route {
             return false;
         }
         $uriIndex = 0;
-        if (count($uriChunks) < count($this->chunks)) {
+        if (count($uriChunks) < count($this->pathChunks)) {
             return false;
         }
-        if (!$this->fuzzy && count($uriChunks) !== count($this->chunks)) {
+        if (!$this->fuzzy && count($uriChunks) !== count($this->pathChunks)) {
             return false;
         }
-        foreach ($this->chunks as $key => $value) {
+        foreach ($this->pathChunks as $key => $value) {
             // Проверка статичных частей роута
             if (is_int($key) && $value !== $uriChunks[$uriIndex]) {
                 return false;
@@ -166,7 +187,7 @@ class Route {
     }
 
     private function refreshChunks(string $uri) {
-        $this->chunks = [];
+        $this->pathChunks = [];
         $uriChunks = explode("/", trim($uri, "/"));
         foreach ($uriChunks as $chunk) {
             if (empty($chunk)) {
@@ -179,9 +200,9 @@ class Route {
                 if (count($uriParameter) < 2 || !array_key_exists($uriParameter[1], static::$URI_PARAMETER_PATTERNS)) {
                     throw new RouteException("Uri parameter pattern should look like {name:type}");
                 }
-                $this->chunks[$uriParameter[0]] = $uriParameter[1];
+                $this->pathChunks[$uriParameter[0]] = $uriParameter[1];
             } else {
-                $this->chunks[] = $chunk;
+                $this->pathChunks[] = $chunk;
             }
         }
     }
