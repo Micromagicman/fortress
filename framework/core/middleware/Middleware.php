@@ -3,13 +3,13 @@
 namespace fortress\core\middleware;
 
 use Closure;
-use Symfony\Component\HttpFoundation\Request;
+use Psr\Http\Message\ServerRequestInterface;
 
 abstract class Middleware {
 
-    private $request;
+    private ServerRequestInterface $request;
 
-    protected function __construct(Request $request) {
+    protected function __construct(ServerRequestInterface $request) {
         $this->request = $request;
     }
 
@@ -20,7 +20,7 @@ abstract class Middleware {
         return $this->denyResponse($this->request);
     }
 
-    protected abstract function check(Request $request);
+    protected abstract function check(ServerRequestInterface $request);
 
-    protected abstract function denyResponse(Request $request);
+    protected abstract function denyResponse(ServerRequestInterface $request);
 }

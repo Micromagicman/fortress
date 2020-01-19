@@ -6,7 +6,7 @@ use InvalidArgumentException;
 
 class RouteCollection {
 
-    private $routes = [];
+    private array $routes = [];
 
     public function addPrefix(string $prefix) {
         foreach ($this->routes as $route) {

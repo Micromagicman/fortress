@@ -5,7 +5,7 @@ namespace fortress\core\configuration;
 use fortress\core\di\loader\MapLoader;
 use fortress\core\router\RouteCollection;
 use fortress\util\common\StringUtils;
-use Symfony\Component\HttpFoundation\Request;
+use Psr\Http\Message\ServerRequestInterface;
 
 class Configuration {
 
@@ -63,10 +63,10 @@ class Configuration {
     }
 
     /**
-     * @param Request $request
+     * @param ServerRequestInterface $request
      * @return array
      */
-    public static function configure(Request $request) {
+    public static function configure(ServerRequestInterface $request) {
         $configurations = [];
         foreach ([
                      self::DATABASE_CONFIGURATION_NAME,
@@ -79,7 +79,7 @@ class Configuration {
             } catch (ConfigurationNotFoundException $e) {}
         }
         $configurations[] = new MapLoader([
-            Request::class => $request,
+            ServerRequestInterface::class => $request,
             RouteCollection::class => self::configureRoutes()
         ]);
         return $configurations;
