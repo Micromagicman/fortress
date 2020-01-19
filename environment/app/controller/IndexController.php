@@ -10,8 +10,8 @@ use fortress\core\http\response\HtmlResponse;
  * @package app\controller
  */
 class IndexController extends Controller {
+
     /**
-     * Render index page
      * @return HtmlResponse
      */
     public function welcome() {

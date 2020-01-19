@@ -3,15 +3,14 @@
 namespace fortress\core;
 
 use fortress\command\Command;
-use fortress\core\configurator\Configurator;
-use fortress\core\di\ServiceContainer;
+use fortress\core\di\Invoker;
 use fortress\core\exception\FortressException;
 use fortress\core\exception\RouteNotFound;
 use fortress\core\http\response\ErrorResponse;
 use fortress\core\router\Route;
-
 use fortress\core\router\Router;
 use InvalidArgumentException;
+use Psr\Container\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -21,12 +20,14 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class Framework {
 
-    private $container;
-    private $configurator;
+    /**
+     * Контейнер внедрения зависимостей
+     * @var ContainerInterface
+     */
+    private ContainerInterface $container;
 
-    public function __construct() {
-        $this->container = new ServiceContainer();
-        $this->configurator = new Configurator();
+    public function __construct(ContainerInterface $container) {
+        $this->container = $container;
     }
 
     /**
@@ -56,9 +57,8 @@ class Framework {
 
     private function runFromHttpRequest(Request $request) {
         try {
-            $this->configurator->initializeContainer($this->container, $request);
             $route = $this->findRoute($request);
-            $response = $this->buildAndInvokeController($route);
+            $response = $this->buildAndInvokeController($route, $request);
             if (!($response instanceof Response)) {
                 throw new FortressException(
                     sprintf(
@@ -83,15 +83,14 @@ class Framework {
 
     private function buildController(Route $route) {
         $controllerClass = $route->getControllerClass();
-        $controller = $this->container->build($controllerClass);
+        $controller = $this->container->get($controllerClass);
         if (null === $controller) {
             throw new FortressException("Controller '" . $controllerClass . "' not found");
         }
         return $controller;
     }
 
-    private function buildAndInvokeController(Route $route) {
-        $request = $this->container->get(Request::class);
+    private function buildAndInvokeController(Route $route, Request $request) {
         $middlewareClass = $route->getMiddleware();
         $controllerClosure = $this->createControllerInvokeClosure($route);
         if (null !== $middlewareClass) {
@@ -102,12 +101,13 @@ class Framework {
     }
 
     private function createControllerInvokeClosure($route) {
-        return function() use ($route) {
-            return $this->container->invoke(
-                $this->buildController($route),
-                $route->getActionName(),
-                $route->getUriVariables()
-            );
+        return function () use ($route) {
+            return $this->container
+                ->get(Invoker::class)
+                ->invoke(
+                    [$this->buildController($route), $route->getActionName()],
+                    $route->getUriVariables()
+                );
         };
     }
 }

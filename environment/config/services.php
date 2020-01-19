@@ -1,10 +1,7 @@
 <?php
 
-use Psr\Container\ContainerInterface;
+use fortress\core\di\loader\MapLoader;
 
-/**
- * Service initializer
- * @param ContainerInterface $c - service container
- */
-return function(ContainerInterface $c) {
-};
+return new MapLoader([
+
+]);

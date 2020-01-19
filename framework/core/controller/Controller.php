@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 abstract class Controller {
 
-    private $container;
+    private ContainerInterface $container;
 
     private $request;
 
@@ -56,10 +56,6 @@ abstract class Controller {
         return $this->request->getClientIp();
     }
 
-    protected function parameter(string $name, $defaultValue = null) {
-        return $this->container->getParameterOrDefault($name, $defaultValue);
-    }
-
     protected function redirect(string $to, array $uriParams = []) {
         $router = $this->container->get(Router::class);
         $uri = $router->buildUri($to, $uriParams);
@@ -94,8 +90,8 @@ abstract class Controller {
     }
 
     private function createView(string $templateName) {
-        $templateType = $this->container->getParameter("template.type");
-        $templateDir = $this->container->getParameter("template.dir");
+        $templateType = $this->container->get("template.type");
+        $templateDir = $this->container->get("template.dir");
         switch ($templateType) {
             default: return new PhpView($templateDir, $templateName);
         }
