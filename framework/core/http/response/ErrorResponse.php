@@ -14,8 +14,8 @@ class ErrorResponse extends Response {
     }
 
     public static function NotFound(FortressException $exception, ContainerInterface $container) {
-        $notFoundTemplateName = $container->getParameter("template.404");
-        $templateDir = $container->getParameter("template.dir");
+        $notFoundTemplateName = $container->get("template.404");
+        $templateDir = $container->get("template.dir");
         $content = $exception->getMessage();
         if (null != $notFoundTemplateName) {
             $view = new PhpView($templateDir, $notFoundTemplateName);

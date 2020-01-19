@@ -1,11 +1,17 @@
 #!/usr/bin/env php
 <?php
 
+use fortress\core\di\ContainerBuilder;
+
 if (file_exists(__DIR__ . "/../../../autoload.php")) {
-    require_once __DIR__ .  "/../../../autoload.php";
+    require_once __DIR__ . "/../../../autoload.php";
 } else {
     require_once __DIR__ . "/vendor/autoload.php";
 }
 
-$fortress = new fortress\core\Framework();
+$fortress = new fortress\core\Framework(
+    (new ContainerBuilder())
+        ->useAutowiring()
+        ->build()
+);
 $fortress->run(new fortress\command\CreateAppCommand());
