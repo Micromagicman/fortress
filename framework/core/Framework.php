@@ -3,7 +3,7 @@
 namespace fortress\core;
 
 use fortress\command\Command;
-use fortress\core\di\Invoker;
+use fortress\core\controller\Controller;
 use fortress\core\exception\FortressException;
 use fortress\core\router\Route;
 use fortress\core\router\Router;
@@ -72,6 +72,11 @@ class Framework {
         );
     }
 
+    /**
+     * @param Route $route
+     * @return Controller
+     * @throws FortressException
+     */
     private function buildController(Route $route) {
         $controllerClass = $route->getControllerClass();
         $controller = $this->container->get($controllerClass);
@@ -84,21 +89,21 @@ class Framework {
     private function buildAndInvokeController(Route $route, ServerRequestInterface $request) {
         $middlewareClass = $route->getMiddleware();
         $controllerClosure = $this->createControllerInvokeClosure($route);
-        if (null !== $middlewareClass) {
-            $middleware = $this->container->build($middlewareClass);
+        if (!empty($middlewareClass)) {
+            $middleware = $this->container->get($middlewareClass);
             return $middleware->handle($controllerClosure);
         }
         return $controllerClosure($request);
     }
 
-    private function createControllerInvokeClosure($route) {
+    private function createControllerInvokeClosure(Route $route) {
         return function () use ($route) {
-            return $this->container
-                ->get(Invoker::class)
-                ->invoke(
-                    [$this->buildController($route), $route->getActionName()],
-                    $route->getUriVariables()
-                );
+            /** @var ServerRequestInterface $request */
+            $request = $this->container->get(ServerRequestInterface::class);
+            foreach ($route->getPathVariables() as $name => $value) {
+                $request = $request->withAttribute($name, $value);
+            }
+            return $this->buildController($route)->handle($request);
         };
     }
 }

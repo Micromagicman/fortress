@@ -32,8 +32,7 @@ class RouteCollection {
             $name,
             $uriPattern,
             $routeConfiguration["controller"],
-            $routeConfiguration["action"],
-            $routeConfiguration["middleware"] ?? null,
+            $routeConfiguration["middleware"] ?? "",
             $routeConfiguration["methods"] ?? ["*"],
             $routeConfiguration["fuzzy"] ?? false
         );
@@ -59,13 +58,11 @@ class RouteCollection {
         }
         $controller = $arguments[2];
         if (is_string($controller)) {
-            list($controllerClass, $action) = explode("::", $controller);
             return $this->add(
                 $arguments[0], // Route name
                 $arguments[1], // Route uriPattern
                 [
-                    "controller" => $controllerClass,
-                    "action" => $action,
+                    "controller" => $controller,
                     "methods" => [$nameUpper]
                 ]
             );

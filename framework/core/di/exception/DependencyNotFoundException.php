@@ -2,11 +2,10 @@
 
 namespace fortress\core\di\exception;
 
-use Exception;
+use fortress\core\exception\FortressException;
 use Psr\Container\NotFoundExceptionInterface;
-use Throwable;
 
-class DependencyNotFoundException extends Exception implements NotFoundExceptionInterface {
+class DependencyNotFoundException extends FortressException implements NotFoundExceptionInterface {
 
     private $id;
 
