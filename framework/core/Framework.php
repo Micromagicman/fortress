@@ -5,14 +5,12 @@ namespace fortress\core;
 use fortress\command\Command;
 use fortress\core\di\Invoker;
 use fortress\core\exception\FortressException;
-use fortress\core\exception\RouteNotFound;
-use fortress\core\http\response\ErrorResponse;
 use fortress\core\router\Route;
 use fortress\core\router\Router;
-use InvalidArgumentException;
+use Laminas\Diactoros\Response\HtmlResponse;
 use Psr\Container\ContainerInterface;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * Class Framework
@@ -31,54 +29,47 @@ class Framework {
     }
 
     /**
-     * @param $runnable
-     * @return ErrorResponse|mixed
+     * Обработка HTTP-запроса
+     * @param ServerRequestInterface $request
+     * @return HtmlResponse|mixed
      */
-    public function run($runnable) {
-        if ($runnable instanceof Command) {
-            return $this->runFromCommand($runnable);
-        } else if ($runnable instanceof Request) {
-            return $this->runFromHttpRequest($runnable);
-        }
-        throw new InvalidArgumentException(
-            sprintf(
-                "Incorrect runnable instance %s or %s expected, %s given",
-                Request::class,
-                Command::class,
-                is_object($runnable) ? get_class($runnable) : gettype($runnable)
-            )
-        );
-    }
-
-    private function runFromCommand(Command $command) {
-        $command->run();
-        return true;
-    }
-
-    private function runFromHttpRequest(Request $request) {
+    public function handleHttpRequest(ServerRequestInterface $request) {
         try {
             $route = $this->findRoute($request);
             $response = $this->buildAndInvokeController($route, $request);
-            if (!($response instanceof Response)) {
+            if (!($response instanceof ResponseInterface)) {
                 throw new FortressException(
                     sprintf(
                         "Controller method should return instance of %s class, %s given",
-                        Response::class,
+                        ResponseInterface::class,
                         is_object($response) ? get_class($response) : gettype($response)
                     )
                 );
             }
             return $response;
-        } catch (RouteNotFound $e) {
-            return ErrorResponse::NotFound($e, $this->container);
         } catch (FortressException $e) {
-            return ErrorResponse::ServerError($e, $this->container);
+            return new HtmlResponse(sprintf(
+                "%s: %s",
+                get_class($e),
+                $e->getMessage()
+            ));
         }
     }
 
-    private function findRoute(Request $request) {
+    /**
+     * Обработка консольной команды
+     * @param Command $command
+     */
+    public function handleCommand(Command $command) {
+        $command->run();
+    }
+
+    private function findRoute(ServerRequestInterface $request) {
         $router = $this->container->get(Router::class);
-        return $router->match($request);
+        return $router->match(
+            $request->getUri()->getPath(),
+            $request->getMethod()
+        );
     }
 
     private function buildController(Route $route) {
@@ -90,7 +81,7 @@ class Framework {
         return $controller;
     }
 
-    private function buildAndInvokeController(Route $route, Request $request) {
+    private function buildAndInvokeController(Route $route, ServerRequestInterface $request) {
         $middlewareClass = $route->getMiddleware();
         $controllerClosure = $this->createControllerInvokeClosure($route);
         if (null !== $middlewareClass) {
