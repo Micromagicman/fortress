@@ -12,6 +12,7 @@ use Laminas\Diactoros\Response\RedirectResponse;
 use PDO;
 use PDOStatement;
 use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
@@ -23,25 +24,25 @@ abstract class Controller {
 
     private ContainerInterface $container;
 
-    private ServerRequestInterface $request;
-
-    private $user;
+    private  $user;
 
     public function __construct(ContainerInterface $ci) {
         $this->container = $ci;
-        $this->request = $this->container->get(ServerRequestInterface::class);
         $this->user = $this->container->get(User::class);
     }
+
+    /**
+     * Обработка контроллером HTTP-запроса
+     * @param ServerRequestInterface $request
+     * @return ResponseInterface
+     */
+    public abstract function handle(ServerRequestInterface $request);
 
     protected function getContainer() {
         return $this->container;
     }
 
-    protected function getRequest() {
-        return $this->request;
-    }
-
-    protected function dbConnection() {
+    protected function getDatabaseConnection() {
         return $this->container->get(DatabaseConnection::class);
     }
 
