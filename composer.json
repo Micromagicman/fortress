@@ -26,9 +26,7 @@
     "require": {
         "psr/container": "^1.0",
         "psr/http-message": "^1.0",
-        "symfony/http-foundation": "^4.2",
-        "ext-pdo": "*",
-        "ext-json": "*"
+        "laminas/laminas-diactoros": "^2.2"
     },
     "bin": [
         "bin/fortress"

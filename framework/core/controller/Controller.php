@@ -2,64 +2,53 @@
 
 namespace fortress\core\controller;
 
-use fortress\core\database\DatabaseConnection;
-use fortress\core\http\response\HtmlResponse;
-use fortress\core\http\response\JsonResponse;
-use fortress\core\http\response\RedirectResponse;
 use fortress\core\router\Router;
 use fortress\core\view\PhpView;
 use fortress\security\User;
+use Laminas\Diactoros\Response\HtmlResponse;
+use Laminas\Diactoros\Response\JsonResponse;
+use Laminas\Diactoros\Response\RedirectResponse;
 use PDO;
 use PDOStatement;
 use Psr\Container\ContainerInterface;
-use Symfony\Component\HttpFoundation\Request;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
+/**
+ * Абстрактный обработчик HTTP-запроса
+ * Class Controller
+ * @package fortress\core\controller
+ */
 abstract class Controller {
 
-    private $container;
-
-    private $request;
-
-    private $user;
+    private ContainerInterface $container;
 
     public function __construct(ContainerInterface $ci) {
         $this->container = $ci;
-        $this->request = $this->container->get(Request::class);
-        $this->user = $this->container->get(User::class);
     }
 
-    protected function di() {
+    /**
+     * Обработка контроллером HTTP-запроса
+     * @param ServerRequestInterface $request
+     * @return ResponseInterface
+     */
+    public abstract function handle(ServerRequestInterface $request);
+
+    protected function getContainer() {
         return $this->container;
-    }
-
-    protected function request() {
-        return $this->request;
-    }
-
-    protected function post(string $key, $default = null) {
-        return $this->request->request->get($key, $default);
-    }
-
-    protected function query(string $key, $default = null) {
-        return $this->request->query->get($key, $default);
-    }
-
-    protected function dbConnection() {
-        return $this->container->get(DatabaseConnection::class);
     }
 
     protected function user() {
         return $this->user;
     }
 
-    protected function userIp() {
-        return $this->request->getClientIp();
-    }
-
-    protected function parameter(string $name, $defaultValue = null) {
-        return $this->container->getParameterOrDefault($name, $defaultValue);
-    }
-
+    /**
+     * Перенаправление пользователя по переданому пути
+     * Также, @param $to - может быть именен маршрута, определенного пользователем
+     * в конфигурационном файле config/routes.php
+     * @param array $uriParams
+     * @return RedirectResponse
+     */
     protected function redirect(string $to, array $uriParams = []) {
         $router = $this->container->get(Router::class);
         $uri = $router->buildUri($to, $uriParams);
@@ -69,10 +58,23 @@ abstract class Controller {
         return new RedirectResponse($to);
     }
 
+    /**
+     * Отправка ответа в виде json
+     * @param $data
+     * @param int $statusCode
+     * @return JsonResponse
+     */
     protected function json($data, int $statusCode = 200) {
-        return new JsonResponse($this->processDataBeforeOutput($data), $statusCode);
+        return new JsonResponse($data, $statusCode);
     }
 
+    /**
+     * Отправка ответа в виде html - страницы
+     * @param string $templateName
+     * @param array $data
+     * @param int $statusCode
+     * @return HtmlResponse
+     */
     protected function render(string $templateName, array $data = [], int $statusCode = 200) {
         $view = $this->createView($templateName);
         $data["user"] = $this->container->get(User::class);
@@ -94,8 +96,8 @@ abstract class Controller {
     }
 
     private function createView(string $templateName) {
-        $templateType = $this->container->getParameter("template.type");
-        $templateDir = $this->container->getParameter("template.dir");
+        $templateType = $this->container->get("template.type");
+        $templateDir = $this->container->get("template.dir");
         switch ($templateType) {
             default: return new PhpView($templateDir, $templateName);
         }

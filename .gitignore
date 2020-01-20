@@ -2,12 +2,11 @@
 /vendor/
 /config/
 /public/
-/test/
 /templates/
 /app/
+/cache/
 
 .DS_Store
 *.lock
-*.xml
 
 bootstrap.php
