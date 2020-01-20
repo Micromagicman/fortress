@@ -2,7 +2,7 @@
 
 namespace fortress\core\database;
 
-use fortress\core\configuration\ConfigurationBag;
+use fortress\core\configurator\ConfigurationBag;
 
 class DatabaseConfiguration {
 

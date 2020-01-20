@@ -3,18 +3,18 @@
 namespace app\controller;
 
 use fortress\core\controller\Controller;
-use Psr\Http\Message\ServerRequestInterface;
+use fortress\core\http\response\HtmlResponse;
 
 /**
  * Class IndexController
  * @package app\controller
  */
 class IndexController extends Controller {
-
     /**
-     * @inheritDoc
+     * Render index page
+     * @return HtmlResponse
      */
-    public function handle(ServerRequestInterface $request) {
+    public function welcome() {
         return $this->render("welcome");
     }
 }
