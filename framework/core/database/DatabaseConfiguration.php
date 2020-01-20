@@ -2,31 +2,31 @@
 
 namespace fortress\core\database;
 
-use fortress\core\configuration\Configuration;
-use fortress\core\configuration\ConfigurationBag;
-use Psr\Container\ContainerInterface;
+use fortress\core\configurator\ConfigurationBag;
 
 class DatabaseConfiguration {
 
     private $driver;
-
     private $host;
-
     private $port;
-
     private $databaseName;
-
     private $username;
-
     private $password;
 
-    public function __construct(ContainerInterface $container) {
-        $this->driver = $container->get(Configuration::DATABASE_DRIVER_KEY);
-        $this->host = $container->get(Configuration::DATABASE_HOST_KEY);
-        $this->port = $container->get(Configuration::DATABASE_PORT_KEY);
-        $this->username = $container->get(Configuration::DATABASE_USERNAME_KEY);
-        $this->password = $container->get(Configuration::DATABASE_PASSWORD_KEY);
-        $this->databaseName = $container->get(Configuration::DATABASE_NAME_KEY);
+    private function __construct(ConfigurationBag $configuration) {
+        $this->driver = $configuration->get("DB_DRIVER");
+        $this->host = $configuration->get("DB_HOST", "localhost");
+        $this->port = $configuration->get("DB_PORT");
+        $this->username = $configuration->get("DB_USERNAME");
+        $this->password = $configuration->get("DB_PASSWORD");
+        $this->databaseName = $configuration->get("DB_NAME");
+    }
+
+    public static function build(ConfigurationBag $configuration) {
+        if (null === $configuration || empty($configuration->items())) {
+            return null;
+        }
+        return new DatabaseConfiguration($configuration);
     }
 
     public function host() {

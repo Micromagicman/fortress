@@ -4,34 +4,16 @@ namespace fortress\command;
 
 abstract class Command {
 
-    protected array $arguments;
-
-    /**
-     * Вывод строки с текущим временем в stdOut
-     * @param string $line
-     */
-    protected function writeWithData(string $line) {
-        echo "[" . date("Y-m-d, H:i") . "] " . $line . "\n";
-    }
-
     /**
      * Получение сообщения с информацией о команде
      * @return string
      */
     public function getHelpMessage() {
         $message = $this->getName() . "\n" . $this->getDescription() . "\n";
-        foreach ($this->getParameters() as $argument) {
+        foreach ($this->getArgumentList()->list() as $argument) {
             $message .= "\n\t-" . $argument->getInfo();
         }
         return $message;
-    }
-
-    /**
-     * Передача параметров командной строки
-     * @param array $arguments
-     */
-    public function setArguments(array $arguments) {
-        $this->arguments = $arguments;
     }
 
     /**
@@ -39,7 +21,7 @@ abstract class Command {
      * По умолчанию, команда не имеет аргументов
      * @return array
      */
-    public function getParameters() {
+    public function getArgumentList() {
         return [];
     }
 
@@ -56,7 +38,7 @@ abstract class Command {
     public abstract function getDescription();
 
     /**
-     * Запуск команды с аргументами
+     * Запуск команды с арегументами
      */
     public abstract function run();
 
@@ -66,9 +48,7 @@ abstract class Command {
      */
     public static function getNativeCliCommands() {
         return [
-            "create-app" => CreateAppCommand::class, // Инициализация нового проекта
-            "create-routes" => CreateRoutesCommand::class, // Парсинг маршрутов из аннотаций методов контроллеров
-            "clear-cache" => ClearCacheCommand::class // Очистка кеша
+            "create-app" => CreateAppCommand::class // Инициализация нового проекта
         ];
     }
 }

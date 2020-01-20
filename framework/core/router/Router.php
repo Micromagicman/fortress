@@ -3,17 +3,19 @@
 namespace fortress\core\router;
 
 use fortress\core\exception\RouteNotFound;
-use fortress\core\exception\UriBuildException;
+use Symfony\Component\HttpFoundation\Request;
 
 class Router {
 
-    private UriBuilder $uriBuilder;
+    private $uriBuilder;
 
-    private RouteCollection $routes;
+    private $routes;
+    private $matchedRoute;
 
-    private Route $matchedRoute;
-
-    public function __construct(UriBuilder $uriBuilder, RouteCollection $routeCollection) {
+    public function __construct(
+        UriBuilder $uriBuilder,
+        RouteCollection $routeCollection
+    ) {
         $this->routes = $routeCollection;
         $this->uriBuilder = $uriBuilder;
     }
@@ -30,46 +32,35 @@ class Router {
         return $this->matchedRoute;
     }
 
-    /**
-     * Поиск подходящего для заданного пути и HTTP-метода маршрута
-     * @param string $uri
-     * @param string $method
-     * @return Route|mixed
-     * @throws RouteNotFound
-     */
-    public function match(string $uri, string $method) {
-        $uriChunks = $this->uriBuilder->buildUriChunks($uri);
+    public function match(Request $request) {
+        $requestUri = $request->getRequestUri();
+        $uriChunks = $this->uriBuilder->buildUriChunks($requestUri);
+        $method = $request->getMethod();
         foreach ($this->routes->all() as $name => $route) {
             if ($route->match($uriChunks, $method)) {
                 $this->matchedRoute = $route;
             }
         }
-        if (!isset($this->matchedRoute)) {
-            throw new RouteNotFound($uri);
+        if (null == $this->matchedRoute) {
+            throw new RouteNotFound($requestUri);
         }
         $variables = $this->extractUriVariables($uriChunks);
-        $this->matchedRoute->setPathVariables($variables);
+        $this->matchedRoute->setUriVariables($variables);
         return $this->matchedRoute;
     }
 
-    /**
-     * @param string $routeName
-     * @param array $params
-     * @return string|null
-     * @throws UriBuildException
-     */
     public function buildUri(string $routeName, array $params = []) {
         $route = $this->routes->getRouteByName($routeName);
         if (null === $route) {
             return null;
         }
-        return $this->uriBuilder->buildPath($route, $params);
+        return $this->uriBuilder->buildUri($route, $params);
     }
 
     private function extractUriVariables(array $uriChunks) {
         $uriIndex = 0;
         $variables = [];
-        foreach ($this->matchedRoute->getPathChunks() as $key => $value) {
+        foreach ($this->matchedRoute->getChunks() as $key => $value) {
             if (is_string($key)) {
                 $variables[$key] = $this->getVariableOfType($uriChunks[$uriIndex], $value);
             }
