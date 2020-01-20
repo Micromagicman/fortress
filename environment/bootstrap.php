@@ -12,4 +12,4 @@ $containerBuilder = (new ContainerBuilder())
     ->withLoaders(...Configuration::configure())
     ->useAutowiring();
 
-$app = new Framework($containerBuilder->build());
+$app = new Framework($containerBuilder);

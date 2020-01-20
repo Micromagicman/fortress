@@ -66,7 +66,7 @@ class RouteCollection {
     }
 
     public function add(string $name, string $uriPattern, array $routeConfiguration) {
-        $route = new Route(
+        return $this->addRoute($name, new Route(
             $name,
             $uriPattern,
             $routeConfiguration["controller"],
@@ -74,7 +74,10 @@ class RouteCollection {
             $routeConfiguration["beforeActions"] ?? [],
             $routeConfiguration["afterActions"] ?? [],
             $routeConfiguration["fuzzy"] ?? false
-        );
+        ));
+    }
+
+    public function addRoute(string $name, Route $route) {
         $this->routes[$name] = $route;
         return $route;
     }

@@ -5,6 +5,8 @@ namespace fortress\core;
 use Exception;
 use fortress\command\Command;
 use fortress\core\controller\ControllerAction;
+use fortress\core\di\ContainerBuilder;
+use fortress\core\di\loader\MapLoader;
 use fortress\core\router\RouterInitializer;
 use Laminas\Diactoros\Response\HtmlResponse;
 use Psr\Container\ContainerInterface;
@@ -22,8 +24,10 @@ class Framework {
      */
     private ContainerInterface $container;
 
-    public function __construct(ContainerInterface $container) {
-        $this->container = $container;
+    private ContainerBuilder $containerBuilder;
+
+    public function __construct(ContainerBuilder $containerBuilder) {
+        $this->containerBuilder = $containerBuilder;
     }
 
     /**
@@ -33,6 +37,8 @@ class Framework {
      */
     public function handleHttpRequest(ServerRequestInterface $request) {
         try {
+            $this->containerBuilder->withLoaders(new MapLoader([ServerRequestInterface::class => $request]));
+            $this->container = $this->containerBuilder->build();
             $pipeline = new ActionPipeline($this->container);
             foreach ([RouterInitializer::class, ControllerAction::class] as $action) {
                 $pipeline->pipe($action);

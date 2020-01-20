@@ -2,7 +2,6 @@
 
 namespace fortress\core\router;
 
-use fortress\core\Action;
 use fortress\core\exception\RouteException;
 
 class Route {
@@ -93,6 +92,10 @@ class Route {
         $this->fuzzy = $fuzzy;
         $this->requestMethods = $this->prepareRequestMethods($requestMethods);
         $this->refreshChunks($uriPattern);
+    }
+
+    public function getName() {
+        return $this->name;
     }
 
     public function getPathPattern() {

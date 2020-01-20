@@ -2,7 +2,6 @@
 
 namespace fortress\core\controller;
 
-use fortress\core\database\DatabaseConnection;
 use fortress\core\router\Router;
 use fortress\core\view\PhpView;
 use fortress\security\User;
@@ -24,11 +23,8 @@ abstract class Controller {
 
     private ContainerInterface $container;
 
-    private  $user;
-
     public function __construct(ContainerInterface $ci) {
         $this->container = $ci;
-        $this->user = $this->container->get(User::class);
     }
 
     /**
@@ -40,10 +36,6 @@ abstract class Controller {
 
     protected function getContainer() {
         return $this->container;
-    }
-
-    protected function getDatabaseConnection() {
-        return $this->container->get(DatabaseConnection::class);
     }
 
     protected function user() {
