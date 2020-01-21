@@ -14,4 +14,4 @@ $fortress = new fortress\core\Framework(
         ->useAutowiring()
         ->build()
 );
-$fortress->run(new fortress\command\CreateAppCommand());
+$fortress->handleCommand(new fortress\command\CreateAppCommand());

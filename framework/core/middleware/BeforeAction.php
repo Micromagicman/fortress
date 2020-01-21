@@ -13,13 +13,7 @@ use Psr\Http\Message\ServerRequestInterface;
  * Class BeforeAction
  * @package fortress\core\middleware
  */
-abstract class BeforeAction implements Action {
-
-    private ContainerInterface $container;
-
-    public function __construct(ContainerInterface $container) {
-        $this->container = $container;
-    }
+abstract class BeforeAction extends MiddlewareAction {
 
     /**
      * @param $payload
@@ -27,22 +21,15 @@ abstract class BeforeAction implements Action {
      * @return mixed
      */
     public function handle($payload, callable $next) {
-        if (!($payload instanceof ServerRequestInterface)) {
-            throw new InvalidArgumentException(
-                sprintf(
-                    "Action payload must implements %s",
-                    ServerRequestInterface::class
-                )
-            );
-        }
+        $this->checkPayload($payload);
         return $this->handleRequest($payload, $next);
     }
 
     /**
-     * @return ContainerInterface
+     * @return string
      */
-    public function getContainer() {
-        return $this->container;
+    public function getPayloadType() {
+        return ServerRequestInterface::class;
     }
 
     /**

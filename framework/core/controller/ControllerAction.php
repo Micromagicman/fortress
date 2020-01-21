@@ -39,7 +39,7 @@ class ControllerAction extends BeforeAction {
         $request = $this->getActionsPipeline($route->getBeforeActions())->run($request);
         // Вызов контроллера
         $response = $this->resolveController($route)->handle($request);
-        return $this->getActionsPipeline($route->getAfterActions())->run([$request, $response], $next);
+        return $this->getActionsPipeline($route->getAfterActions())->run($response, $next);
     }
 
     /**
