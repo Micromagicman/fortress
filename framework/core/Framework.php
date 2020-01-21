@@ -7,6 +7,8 @@ use fortress\command\Command;
 use fortress\core\controller\ControllerAction;
 use fortress\core\di\ContainerBuilder;
 use fortress\core\di\loader\MapLoader;
+use fortress\core\exception\handler\ExceptionHandler;
+use fortress\core\exception\handler\ResponseExceptionHandler;
 use fortress\core\router\RouterInitializer;
 use Laminas\Diactoros\Response\HtmlResponse;
 use Psr\Container\ContainerInterface;
@@ -24,7 +26,17 @@ class Framework {
      */
     private ContainerInterface $container;
 
+    /**
+     * Объект, управляющий предварительной настройкой контейнера зависимостей
+     * @var ContainerBuilder
+     */
     private ContainerBuilder $containerBuilder;
+
+    /**
+     * Обработчик исключений
+     * @var ExceptionHandler
+     */
+    private ExceptionHandler $exceptionHandler;
 
     public function __construct(ContainerBuilder $containerBuilder) {
         $this->containerBuilder = $containerBuilder;
@@ -45,11 +57,7 @@ class Framework {
             }
             return $pipeline->run($request);
         } catch (Exception $exception) {
-            return new HtmlResponse(sprintf(
-                "%s: %s",
-                get_class($exception),
-                $exception->getMessage()
-            ));
+            return $this->exceptionHandler->handle($request, $exception);
         }
     }
 
