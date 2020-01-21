@@ -4,13 +4,19 @@ namespace fortress\core\exception;
 
 class RouteNotFound extends FortressException {
 
-    private $uri;
+    private string $path;
 
-    public function __construct($uri) {
-        parent::__construct("Сannot find route for '$uri'");
+    private string $method;
+
+    public function __construct(string $method, string $path) {
+        parent::__construct(sprintf("Route not found for %s %s", $method, $path));
     }
 
-    public function getUri() {
-        return $this->uri;
+    public function getMethod() {
+        return $this->method;
+    }
+
+    public function getPath() {
+        return $this->path;
     }
 }
