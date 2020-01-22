@@ -40,6 +40,7 @@ class Framework {
 
     public function __construct(ContainerBuilder $containerBuilder) {
         $this->containerBuilder = $containerBuilder;
+        $this->exceptionHandler = new ResponseExceptionHandler();
     }
 
     /**
