@@ -28,6 +28,11 @@ class Configuration {
     public const DATABASE_USERNAME_KEY = "DB_USERNAME";
     public const DATABASE_PASSWORD_KEY = "DB_PASSWORD";
 
+    /**
+     * Конфигурационные параметры подсистемы безопасности
+     */
+    public const CSRF_TOKEN_KEY = "CSRF_TOKEN";
+
     private static array $configNamesCache = [];
 
     public static function getConfigFilePath(string $fileName) {

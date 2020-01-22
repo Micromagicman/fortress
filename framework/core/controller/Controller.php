@@ -2,6 +2,7 @@
 
 namespace fortress\core\controller;
 
+use fortress\core\configuration\Configuration;
 use fortress\core\router\Router;
 use fortress\core\view\PhpView;
 use fortress\security\User;
@@ -36,10 +37,6 @@ abstract class Controller {
 
     protected function getContainer() {
         return $this->container;
-    }
-
-    protected function user() {
-        return $this->user;
     }
 
     /**
@@ -77,7 +74,6 @@ abstract class Controller {
      */
     protected function render(string $templateName, array $data = [], int $statusCode = 200) {
         $view = $this->createView($templateName);
-        $data["user"] = $this->container->get(User::class);
         $htmlContent = $view->render($this->processDataBeforeOutput($data));
         return new HtmlResponse($htmlContent, $statusCode);
     }
@@ -92,6 +88,8 @@ abstract class Controller {
         } else if ($data instanceof PDOStatement) {
             $data = $data->fetchAll(PDO::FETCH_ASSOC);
         }
+        $data[Configuration::CSRF_TOKEN_KEY] = $this->container->get(Configuration::CSRF_TOKEN_KEY);
+        $data["user"] = $this->container->get(User::class);
         return $data;
     }
 
