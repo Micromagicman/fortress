@@ -29,4 +29,22 @@ class StringUtils {
         $mainLen = mb_strlen($str);
         return mb_substr($str, $mainLen - mb_strlen($suffix)) === $suffix;
     }
+
+    /**
+     * Проверка строки на пустоту
+     * @param $string
+     * @return bool
+     */
+    public static function isEmpty($string) {
+        return null === $string || "" === $string;
+    }
+
+    /**
+     *  Проверка строки на НЕ пустоту
+     * @param $string
+     * @return bool
+     */
+    public static function isNotEmpty($string) {
+        return !self::isEmpty($string);
+    }
 }
