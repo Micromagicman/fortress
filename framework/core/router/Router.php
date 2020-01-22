@@ -45,7 +45,7 @@ class Router {
             }
         }
         if (!isset($this->matchedRoute)) {
-            throw new RouteNotFound($uri);
+            throw new RouteNotFound($method, $uri);
         }
         $variables = $this->extractUriVariables($uriChunks);
         $this->matchedRoute->setPathVariables($variables);

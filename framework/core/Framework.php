@@ -10,6 +10,7 @@ use fortress\core\di\loader\MapLoader;
 use fortress\core\exception\handler\ExceptionHandler;
 use fortress\core\exception\handler\ResponseExceptionHandler;
 use fortress\core\router\RouterInitializer;
+use fortress\security\csrf\CsrfTokenValidator;
 use Laminas\Diactoros\Response\HtmlResponse;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -53,7 +54,7 @@ class Framework {
             $this->containerBuilder->withLoaders(new MapLoader([ServerRequestInterface::class => $request]));
             $this->container = $this->containerBuilder->build();
             $pipeline = new ActionPipeline($this->container);
-            foreach ([RouterInitializer::class, ControllerAction::class] as $action) {
+            foreach ($this->getActionSequence() as $action) {
                 $pipeline->pipe($action);
             }
             return $pipeline->run($request);
@@ -68,5 +69,16 @@ class Framework {
      */
     public function handleCommand(Command $command) {
         $command->run();
+    }
+
+    /**
+     * @return array
+     */
+    private function getActionSequence() {
+        return [
+            CsrfTokenValidator::class,
+            RouterInitializer::class,
+            ControllerAction::class
+        ];
     }
 }
