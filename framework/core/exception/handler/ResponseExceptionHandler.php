@@ -3,28 +3,53 @@
 namespace fortress\core\exception\handler;
 
 use fortress\core\exception\RouteNotFound;
+use fortress\util\collection\ArrayUtils;
 use fortress\util\common\StringUtils;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Throwable;
 
 class ResponseExceptionHandler implements ExceptionHandler {
 
+    /**
+     * Стандартный код ответа HTTP ошибки
+     */
     private const DEFAULT_ERROR_STATUS_CODE = 500;
+
+    /**
+     * Соответствие типа исключения коду HTTP ответа
+     */
     private const EXCEPTION_STATUS_CODES = [
         RouteNotFound::class => 404
     ];
 
+    private bool $devMode;
+
     public function __construct(bool $devMode = false) {
+        $this->devMode = $devMode;
     }
 
     public function handle(ServerRequestInterface $request, Throwable $exception) {
-        return $this->getResponseBuilder($request)
-            ->setMessage($exception->getMessage())
-            ->setStatusCode($this->resolveHttpStatusCode($exception))
-            ->build();
+        $responseBuilder = $this->getResponseBuilder($request);
+        return $this->buildResponse($responseBuilder, $exception);
     }
 
     /**
+     * Создание HTTP ответа в зависимости от режима разработки
+     * @param ExceptionResponseBuilder $builder
+     * @param Throwable $exception
+     * @return ResponseInterface
+     */
+    private function buildResponse(ExceptionResponseBuilder $builder, Throwable $exception) {
+        $statusCode = $this->resolveHttpStatusCode($exception);
+        return $this->devMode
+            ? $builder->developmentResponse($exception, $statusCode)
+            : $builder->productionResponse($exception, $statusCode);
+    }
+
+    /**
+     * В зависимости от заголовка запроса с типом переданных данных (Content-Type)
+     * понимаем, какой тип ответа ожидает пользователь в качестве ошибки
      * @param ServerRequestInterface $request
      * @return ExceptionResponseBuilder
      */
@@ -37,10 +62,10 @@ class ResponseExceptionHandler implements ExceptionHandler {
     }
 
     private function resolveHttpStatusCode(Throwable $exception) {
-        $exceptionClass = get_class($exception);
-        if (array_key_exists($exceptionClass, self::EXCEPTION_STATUS_CODES)) {
-            return self::EXCEPTION_STATUS_CODES[$exceptionClass];
-        }
-        return self::DEFAULT_ERROR_STATUS_CODE;
+        return ArrayUtils::getOrDefault(
+            self::EXCEPTION_STATUS_CODES,
+            get_class($exception),
+            self::DEFAULT_ERROR_STATUS_CODE
+        );
     }
 }

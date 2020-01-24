@@ -39,9 +39,9 @@ class Framework {
      */
     private ExceptionHandler $exceptionHandler;
 
-    public function __construct(ContainerBuilder $containerBuilder) {
+    public function __construct(ContainerBuilder $containerBuilder, bool $devMode = false) {
         $this->containerBuilder = $containerBuilder;
-        $this->exceptionHandler = new ResponseExceptionHandler();
+        $this->exceptionHandler = new ResponseExceptionHandler($devMode);
     }
 
     /**
@@ -54,7 +54,7 @@ class Framework {
             $this->containerBuilder->withLoaders(new MapLoader([ServerRequestInterface::class => $request]));
             $this->container = $this->containerBuilder->build();
             $pipeline = new ActionPipeline($this->container);
-            foreach ($this->getActionSequence() as $action) {
+            foreach ($this->getCoreActions() as $action) {
                 $pipeline->pipe($action);
             }
             return $pipeline->run($request);
@@ -74,7 +74,7 @@ class Framework {
     /**
      * @return array
      */
-    private function getActionSequence() {
+    private function getCoreActions() {
         return [
             CsrfTokenValidator::class,
             RouterInitializer::class,

@@ -6,16 +6,16 @@ use fortress\core\exception\RenderException;
 
 class PhpView extends View {
 
-    private $parent = null; // PhpView instance!
+    private PhpView $parent;
 
-    private $currentRenderingBlock;
+    private string $currentRenderingBlock;
 
-    private $content = "";
+    private string $content = "";
 
-    private $blocks = [];
+    private array $blocks = [];
 
-    public function __construct(string $templatePath, string $templateName) {
-        parent::__construct($templatePath, $templateName);
+    public function __construct(string $templateName) {
+        parent::__construct($templateName);
     }
 
     public function extend(string $parentTemplateFile) {
@@ -23,7 +23,7 @@ class PhpView extends View {
         if (!empty($this->blocks) || !empty($this->content)) {
             throw new RenderException("'extend' command must be at first line of template");
         }
-        $this->parent = new PhpView($this->getTemplateDir(), $parentTemplateFile);
+        $this->parent = new PhpView($parentTemplateFile);
         ob_start();
     }
 
@@ -51,7 +51,7 @@ class PhpView extends View {
         require_once $this->templatePath;
         $this->content .= ob_get_clean();
         // Заполнение родителя
-        if (null !== $this->parent) {
+        if (isset($this->parent)) {
             return $this->parent->render($variables, $this->blocks);
         }
 

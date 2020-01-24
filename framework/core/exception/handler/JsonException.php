@@ -3,37 +3,45 @@
 namespace fortress\core\exception\handler;
 
 use Laminas\Diactoros\Response\JsonResponse;
+use Throwable;
 
 class JsonException implements ExceptionResponseBuilder {
 
-    private array $data = [];
-
-    private int $status;
-
     /**
+     * HTTP ответ для режима разработки
+     * @param Throwable $exception
      * @param int $statusCode
-     * @return $this
+     * @return mixed
      */
-    public function setStatusCode(int $statusCode) {
-        $this->status = $statusCode;
-        $this->data["status"] = $statusCode;
-        return $this;
+    public function developmentResponse(Throwable $exception, int $statusCode) {
+        return $this->getResponse(
+            [
+                "status" => $statusCode,
+                "message" => $exception->getMessage(),
+                "trace" => $exception->getTrace(),
+                "exceptionClass" => get_class($exception)
+            ],
+            $statusCode
+        );
     }
 
     /**
-     * @param string $message
-     * @return $this
+     * HTTP ответ для production-режима
+     * @param Throwable $exception
+     * @param int $statusCode
+     * @return mixed
      */
-    public function setMessage(string $message) {
-        $this->data["message"] = $message;
-        return $this;
+    public function productionResponse(Throwable $exception, int $statusCode) {
+        return $this->getResponse(
+            [
+                "status" => $statusCode,
+                "message" => $exception->getMessage(),
+            ],
+            $statusCode
+        );
     }
 
-    public function setTrace(array $trace) {
-        // TODO: Implement setTrace() method.
-    }
-
-    public function build() {
-        return new JsonResponse($this->data, $this->status);
+    private function getResponse(array $data, int $statusCode) {
+        return new JsonResponse($data, $statusCode);
     }
 }

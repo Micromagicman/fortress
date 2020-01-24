@@ -15,6 +15,7 @@ class BasicResponseEmitter implements ResponseEmitter {
         if (!headers_sent()) {
             $this->sendHeaders($response->getHeaders());
         }
+        http_response_code($response->getStatusCode());
         $this->sendBody($response->getBody());
     }
 
