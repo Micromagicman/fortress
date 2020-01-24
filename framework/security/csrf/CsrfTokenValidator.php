@@ -21,11 +21,15 @@ class CsrfTokenValidator extends BeforeAction {
     /**
      * Ключ, по которому хранится токен
      * - В полях формы (тег <input type="hidden" />)
-     * - В HTTP заголовках ответа
      * - В Cookies
      * - В пользовательской сессии на стороне сервера
      */
     private const TOKEN_KEY = Configuration::CSRF_TOKEN_KEY;
+
+    /**
+     * Ключ HTTP заголовка, содержащего токен
+     */
+    private const TOKEN_HEADER_KEY = "Csrf-Token";
 
     /**
      * Серверная сессия
@@ -47,7 +51,7 @@ class CsrfTokenValidator extends BeforeAction {
      */
     protected function handleRequest(ServerRequestInterface $request, callable $next) {
         if ($this->isSafeRequest($request) || $this->matchTokens($request)) {
-            return $this->addTokenToResponse($next($request));
+           return $this->addTokenToResponse($next($request));
         }
         throw new InvalidCsrfToken();
     }
@@ -58,7 +62,7 @@ class CsrfTokenValidator extends BeforeAction {
      * @return ResponseInterface
      */
     private function addTokenToResponse(ResponseInterface $response) {
-        return $response->withHeader(self::TOKEN_KEY, $this->generateToken());
+        return $response->withHeader(self::TOKEN_HEADER_KEY, $this->generateToken());
     }
 
     /**
@@ -101,7 +105,7 @@ class CsrfTokenValidator extends BeforeAction {
      */
     private function getRequestToken(ServerRequestInterface $request) {
         $token = $request->getParsedBody()[self::TOKEN_KEY]
-            ?? $request->getHeaderLine(self::TOKEN_KEY);
+            ?? $request->getHeaderLine(self::TOKEN_HEADER_KEY);
         if (StringUtils::isEmpty($token)) {
             $token = $request->getCookieParams()[self::TOKEN_KEY] ?? "";
         }

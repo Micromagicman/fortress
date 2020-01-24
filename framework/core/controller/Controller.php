@@ -3,6 +3,7 @@
 namespace fortress\core\controller;
 
 use fortress\core\configuration\Configuration;
+use fortress\core\exception\TemplateNotFoundException;
 use fortress\core\router\Router;
 use fortress\core\view\PhpView;
 use fortress\security\User;
@@ -71,6 +72,7 @@ abstract class Controller {
      * @param array $data
      * @param int $statusCode
      * @return HtmlResponse
+     * @throws TemplateNotFoundException
      */
     protected function render(string $templateName, array $data = [], int $statusCode = 200) {
         $view = $this->createView($templateName);
@@ -93,11 +95,15 @@ abstract class Controller {
         return $data;
     }
 
+    /**
+     * @param string $templateName
+     * @return PhpView
+     * @throws TemplateNotFoundException
+     */
     private function createView(string $templateName) {
         $templateType = $this->container->get("template.type");
-        $templateDir = $this->container->get("template.dir");
         switch ($templateType) {
-            default: return new PhpView($templateDir, $templateName);
+            default: return new PhpView($templateName);
         }
     }
 }

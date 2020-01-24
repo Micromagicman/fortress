@@ -1,10 +1,12 @@
 <?php
 
-namespace fortress\core\exception;
+namespace fortress\security\exception;
+
+use fortress\core\exception\FortressException;
 
 class UserNotFound extends FortressException {
 
-    private $username;
+    private string $username;
 
     public function __construct(string $username) {
         parent::__construct("User '$username' not found");
