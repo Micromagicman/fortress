@@ -1,9 +1,10 @@
 <?php
 
-$fortress = require_once __DIR__ . "/../bootstrap.php";
+use fortress\core\http\response\BasicResponseEmitter;
+use Laminas\Diactoros\ServerRequestFactory;
 
-$request = \Symfony\Component\HttpFoundation\Request::createFromGlobals();
-$response = $fortress->run($request);
+require_once __DIR__ . "/../bootstrap.php";
 
-$response->sendHeaders();
-echo $response->getContent();
+$request = ServerRequestFactory::fromGlobals();
+$response = $app->handleHttpRequest($request);
+(new BasicResponseEmitter())->emit($response);
