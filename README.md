@@ -1,8 +1,5 @@
 # Fortress framework (v0.3.1)
 
-[![Build Status](https://travis-ci.org/Micromagicman/fortress.svg?branch=dev)](https://travis-ci.org/Micromagicman/fortress)
-[![codecov](https://codecov.io/gh/Micromagicman/fortress/branch/dev/graph/badge.svg)](https://codecov.io/gh/Micromagicman/fortress)
-
 PHP microframework for humans
 
 ## Installation

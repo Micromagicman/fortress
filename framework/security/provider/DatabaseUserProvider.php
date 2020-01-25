@@ -3,8 +3,8 @@
 namespace fortress\security\provider;
 
 use fortress\core\database\DatabaseConnection;
+use fortress\core\exception\UserNotFound;
 use fortress\security\basic\BaseUser;
-use fortress\security\exception\UserNotFound;
 use fortress\security\RoleProvider;
 use fortress\security\UserProvider;
 

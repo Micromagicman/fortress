@@ -4,7 +4,6 @@ namespace fortress\security\basic;
 
 use fortress\security\AuthenticationErrors;
 use fortress\security\Authenticator;
-use fortress\security\exception\UserNotFound;
 use fortress\security\Session;
 use fortress\security\UserProvider;
 

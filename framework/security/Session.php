@@ -6,7 +6,7 @@ use fortress\core\exception\SessionNotStarted;
 
 class Session {
 
-    private array $storage;
+    private $storage;
 
     public function __construct() {
         if (session_status() == PHP_SESSION_NONE) {
