@@ -92,13 +92,4 @@ class CreateAppCommand extends Command {
         }
         closedir($sourceDirResource);
     }
-
-    /**
-     * Вывод строки с текущим временем в stdOut
-     * @param string $line
-     */
-    private function writeWithData(string $line) {
-        echo "[" . date("Y-m-d, H:i") . "] " . $line . "\n";
-    }
-
 }
