@@ -16,16 +16,16 @@ class MapLoaderTest extends TestCase {
         $container = $this->createMock(ContainerInterface::class);
         $mapLoader = new MapLoader(["a" => 1, "b" => 2]);
         /** @var ContainerInterface $container */
-        $this->assertEquals(1, $mapLoader->load("a", $container));
-        $this->assertEquals(2, $mapLoader->load("b", $container));
+        self::assertEquals(1, $mapLoader->load("a", $container));
+        self::assertEquals(2, $mapLoader->load("b", $container));
         $this->expectException(DependencyNotFoundException::class);
         $mapLoader->load("c", $container);
     }
 
     public function testIsLoadable() {
         $mapLoader = new MapLoader(["a" => 1, "b" => 2]);
-        $this->assertTrue($mapLoader->isLoadable("a"));
-        $this->assertTrue($mapLoader->isLoadable("b"));
-        $this->assertFalse($mapLoader->isLoadable("c"));
+        self::assertTrue($mapLoader->isLoadable("a"));
+        self::assertTrue($mapLoader->isLoadable("b"));
+        self::assertFalse($mapLoader->isLoadable("c"));
     }
 }

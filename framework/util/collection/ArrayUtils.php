@@ -23,4 +23,22 @@ class ArrayUtils {
         }
         return $defaultValue;
     }
+
+    /**
+     * Вычисление значения при отсутсвии по заданному ключу
+     * Вычисленное значение попадает в переданный массив по заданному ключу
+     * а также возращается вызвавшешму данный метод коду
+     * @param array $source
+     * @param $key
+     * @param callable $computer
+     * @return mixed
+     */
+    public static function computeIfNotPresent(array $source, $key, callable $computer) {
+        if (array_key_exists($key, $source)) {
+            return $source[$key];
+        }
+        $value = $computer($key);
+        $source[$key] = $value;
+        return $value;
+    }
 }

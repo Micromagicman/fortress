@@ -3,8 +3,8 @@
 namespace fortress\core\controller;
 
 use fortress\core\ActionPipeline;
-use fortress\core\exception\RouteNotFound;
 use fortress\core\middleware\BeforeAction;
+use fortress\core\router\exception\RouteNotFound;
 use fortress\core\router\Route;
 use fortress\core\router\Router;
 use Psr\Container\ContainerInterface;

@@ -2,40 +2,25 @@
 
 namespace fortress\core\view;
 
-use fortress\core\exception\TemplateNotFoundException;
-use fortress\util\common\StringUtils;
-
 abstract class View {
 
-    private const TEMPLATE_DIR = ".." . DIRECTORY_SEPARATOR . "templates";
-
+    /**
+     * Путь до файла view
+     * @var string
+     */
     protected string $templatePath;
 
     /**
      * Инициализация view
-     * @param string $templateName
-     * @throws TemplateNotFoundException
+     * @param string $templateFilePath
      */
-    public function __construct(string $templateName) {
-        $templatePath = $this->createTemplatePath($templateName);
-        if (!file_exists($templatePath)) {
-            throw new TemplateNotFoundException($templatePath);
-        }
-        $this->templatePath = $templatePath;
+    public function __construct(string $templateFilePath) {
+        $this->templatePath = $templateFilePath;
     }
 
     /**
-     * Создание пути до шаблона view
-     * @param string $templateName
+     * Расширение файла шаблона view
      * @return string
      */
-    protected function createTemplatePath(string $templateName) {
-        $extension = $this->getExtension();
-        if (!StringUtils::endsWith($templateName, ".$extension")) {
-            $templateName .= ".$extension";
-        }
-        return self::TEMPLATE_DIR . DIRECTORY_SEPARATOR . $extension . DIRECTORY_SEPARATOR . $templateName;
-    }
-
     protected abstract function getExtension();
 }

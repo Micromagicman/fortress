@@ -2,13 +2,15 @@
 
 namespace fortress\core\configuration;
 
+use fortress\util\collection\ArrayUtils;
 use fortress\util\common\StringUtils;
 
 class Configuration {
 
-    public const CONFIGURATION_DIR = ".." . DIRECTORY_SEPARATOR . "config";
+    public const DEFAULT_CONFIGURATION_DIR = "config";
     public const DEFAULT_CONFIGURATION_EXTENSION = ".php";
-
+    public const DEFAULT_TEMPLATES_DIR = "templates";
+    public const DEFAULT_TEMPLATE_TYPE = "php";
     /**
      * Имена конфигурационных файлов
      */
@@ -33,22 +35,41 @@ class Configuration {
      */
     public const CSRF_TOKEN_KEY = "CSRF_TOKEN";
 
-    private static array $configNamesCache = [];
+    private string $configurationDir;
 
-    public static function getConfigFilePath(string $fileName) {
+    private string $templatesDir;
+
+    private array $configNamesCache = [];
+
+    public function __construct(
+        string $bootstrapFilePath,
+        string $configurationDir = self::DEFAULT_CONFIGURATION_DIR,
+        string $templatesDir = self::DEFAULT_TEMPLATES_DIR) {
+        if (StringUtils::isEmpty($configurationDir)) {
+            $configurationDir = self::DEFAULT_CONFIGURATION_DIR;
+        }
+        if (StringUtils::isEmpty($templatesDir)) {
+            $templatesDir = self::DEFAULT_TEMPLATES_DIR;
+        }
+        $this->configurationDir = $bootstrapFilePath . DIRECTORY_SEPARATOR . $configurationDir;
+        $this->templatesDir = $bootstrapFilePath . DIRECTORY_SEPARATOR . $templatesDir;
+    }
+
+    public function getTemplatesDir() {
+        return $this->templatesDir;
+    }
+
+    public function getConfigFilePath(string $fileName) {
         if (!StringUtils::endsWith($fileName, self::DEFAULT_CONFIGURATION_EXTENSION)) {
             $fileName .= self::DEFAULT_CONFIGURATION_EXTENSION;
         }
-        if (array_key_exists($fileName, static::$configNamesCache)) {
-            return static::$configNamesCache[$fileName];
-        }
-        $configPath = self::CONFIGURATION_DIR . DIRECTORY_SEPARATOR . $fileName;
-        static::$configNamesCache[$fileName] = $configPath;
-        return $configPath;
+        return ArrayUtils::computeIfNotPresent($this->configNamesCache, $fileName, function ($key) {
+            return $this->configurationDir . DIRECTORY_SEPARATOR . $key;
+        });
     }
 
-    public static function isConfigurationExists(string $fileName) {
-        return file_exists(self::getConfigFilePath($fileName));
+    public function isConfigurationExists(string $fileName) {
+        return file_exists($this->getConfigFilePath($fileName));
     }
 
     /**
@@ -56,30 +77,34 @@ class Configuration {
      * @return mixed
      * @throws ConfigurationNotFoundException
      */
-    public static function loadConfiguration(string $fileName) {
-        $configFilePath = self::getConfigFilePath($fileName);
-        if (!self::isConfigurationExists($fileName)) {
+    public function loadConfiguration(string $fileName) {
+        $configFilePath = $this->getConfigFilePath($fileName);
+        if (!$this->isConfigurationExists($fileName)) {
             throw new ConfigurationNotFoundException($configFilePath);
         }
-        return require_once($configFilePath);
+        return require($configFilePath);
     }
 
     /**
      * Загрузка параметров из конфигурационных файлов
      * @return array
      */
-    public static function configure() {
+    public function configure() {
         $configurations = [];
-        foreach ([
-                     self::DATABASE_CONFIGURATION_NAME,
-                     self::PARAMETERS_CONFIGURATION_NAME,
-                     self::SECURITY_CONFIGURATION_NAME,
-                     self::SERVICE_CONFIGURATION_NAME
-                 ] as $configFile) {
+        foreach (self::getConfigurations() as $configFile) {
             try {
-                $configurations[] = self::loadConfiguration($configFile);
+                $configurations[] = $this->loadConfiguration($configFile);
             } catch (ConfigurationNotFoundException $e) {}
         }
         return $configurations;
+    }
+
+    private static function getConfigurations() {
+        return [
+            self::DATABASE_CONFIGURATION_NAME,
+            self::PARAMETERS_CONFIGURATION_NAME,
+            self::SECURITY_CONFIGURATION_NAME,
+            self::SERVICE_CONFIGURATION_NAME
+        ];
     }
 }

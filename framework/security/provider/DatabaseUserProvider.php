@@ -19,7 +19,7 @@ class DatabaseUserProvider extends UserProvider {
 
     public function byUsername(string $username) {
         $userData = $this->fetchUser($username);
-        if (null == $userData) {
+        if (null === $userData) {
             throw new UserNotFound($username);
         }
         return new BaseUser(

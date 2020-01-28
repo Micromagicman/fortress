@@ -58,11 +58,11 @@ class DependencyContainerTest extends TestCase {
     }
 
     public function testGet() {
-        $this->assertEquals(
+        self::assertEquals(
             "a string",
             $this->dependencyContainer->get("a")
         );
-        $this->assertEquals(
+        self::assertEquals(
             123,
             $this->dependencyContainer->get("c")
         );
@@ -79,25 +79,25 @@ class DependencyContainerTest extends TestCase {
     }
 
     public function testGetAutowire() {
-        $this->assertEquals(
+        self::assertEquals(
             new A(new B(), 1),
             $this->dependencyContainer->get(A::class)
         );
     }
 
     public function testServiceFactoryDependency() {
-        $this->assertEquals(
+        self::assertEquals(
             3,
             $this->dependencyContainer->get("sum")
         );
     }
 
     public function testHas() {
-        $this->assertFalse($this->dependencyContainer->has("not dependency"));
-        $this->assertTrue($this->dependencyContainer->has("a"));
+        self::assertFalse($this->dependencyContainer->has("not dependency"));
+        self::assertTrue($this->dependencyContainer->has("a"));
     }
 
     public function testInvoke() {
-        $this->assertEquals(3, $this->dependencyContainer->invoke([new B(), "sum"], [1, 2]));
+        self::assertEquals(3, $this->dependencyContainer->invoke([new B(), "sum"], [1, 2]));
     }
 }

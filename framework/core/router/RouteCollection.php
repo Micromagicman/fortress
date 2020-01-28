@@ -40,8 +40,8 @@ class RouteCollection {
             $prefix = UriBuilder::URI_SEPARATOR . $prefix;
         }
         foreach ($this->routes as $route) {
-            $prevUri = $route->getUriPattern();
-            $route->setUriPattern($prefix . $prevUri);
+            $prevUri = $route->getPathPattern();
+            $route->setPathPattern($prefix . $prevUri);
         }
     }
 
