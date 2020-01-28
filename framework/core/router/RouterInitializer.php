@@ -30,14 +30,22 @@ class RouterInitializer extends BeforeAction {
      */
     private RouteCollection $routeCollection;
 
+    /**
+     * Настройки приложения
+     * @var Configuration
+     */
+    private Configuration $configuration;
+
     public function __construct(
         ContainerInterface $container,
+        Configuration $configuration,
         RouteCacheManager $cacheManager,
         RouteCollection $routeCollection
     ) {
         parent::__construct($container);
         $this->cacheManager = $cacheManager;
         $this->routeCollection = $routeCollection;
+        $this->configuration = $configuration;
     }
 
     /**
@@ -48,7 +56,7 @@ class RouterInitializer extends BeforeAction {
      * @throws ConfigurationNotFoundException
      */
     protected function handleRequest(ServerRequestInterface $request, callable $next) {
-        $routes = Configuration::loadConfiguration(Configuration::ROUTES_CONFIGURATION_NAME);
+        $routes = $this->configuration->loadConfiguration(Configuration::ROUTES_CONFIGURATION_NAME);
         if ($routes instanceof Closure) {
             $routes($this->routeCollection);
         } else if (is_array($routes)) {

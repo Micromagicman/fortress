@@ -2,9 +2,11 @@
 
 namespace fortress\core\exception\handler;
 
-use fortress\core\exception\RouteNotFound;
+use fortress\core\router\exception\RouteNotFound;
+use fortress\core\view\ViewLoader;
 use fortress\util\collection\ArrayUtils;
 use fortress\util\common\StringUtils;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Throwable;
@@ -23,9 +25,12 @@ class ResponseExceptionHandler implements ExceptionHandler {
         RouteNotFound::class => 404
     ];
 
+    private ContainerInterface $container;
+
     private bool $devMode;
 
-    public function __construct(bool $devMode = false) {
+    public function __construct(ContainerInterface $container, bool $devMode = false) {
+        $this->container = $container;
         $this->devMode = $devMode;
     }
 
@@ -58,7 +63,7 @@ class ResponseExceptionHandler implements ExceptionHandler {
         if (StringUtils::startsWith($contentType, "application/json")) {
             return new JsonException();
         }
-        return new HtmlException();
+        return new HtmlException($this->container->get(ViewLoader::class));
     }
 
     private function resolveHttpStatusCode(Throwable $exception) {

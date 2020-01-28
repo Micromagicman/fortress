@@ -2,16 +2,14 @@
 
 namespace fortress\core\router;
 
-use fortress\core\exception\RouteNotFound;
 use fortress\core\exception\UriBuildException;
+use fortress\core\router\exception\RouteNotFound;
 
 class Router {
 
     private UriBuilder $uriBuilder;
 
     private RouteCollection $routes;
-
-    private Route $matchedRoute;
 
     public function __construct(UriBuilder $uriBuilder, RouteCollection $routeCollection) {
         $this->routes = $routeCollection;
@@ -26,10 +24,6 @@ class Router {
         return $this->routes;
     }
 
-    public function getMatchedRoute() {
-        return $this->matchedRoute;
-    }
-
     /**
      * Поиск подходящего для заданного пути и HTTP-метода маршрута
      * @param string $uri
@@ -38,18 +32,19 @@ class Router {
      * @throws RouteNotFound
      */
     public function match(string $uri, string $method) {
+        $matchedRoute = null;
         $uriChunks = $this->uriBuilder->buildUriChunks($uri);
         foreach ($this->routes->all() as $name => $route) {
             if ($route->match($uriChunks, $method)) {
-                $this->matchedRoute = $route;
+                $matchedRoute = $route;
             }
         }
-        if (!isset($this->matchedRoute)) {
+        if (!isset($matchedRoute)) {
             throw new RouteNotFound($method, $uri);
         }
-        $variables = $this->extractUriVariables($uriChunks);
-        $this->matchedRoute->setPathVariables($variables);
-        return $this->matchedRoute;
+        $variables = $this->extractUriVariables($matchedRoute, $uriChunks);
+        $matchedRoute->setPathVariables($variables);
+        return $matchedRoute;
     }
 
     /**
@@ -58,7 +53,7 @@ class Router {
      * @return string|null
      * @throws UriBuildException
      */
-    public function buildUri(string $routeName, array $params = []) {
+    public function buildPath(string $routeName, array $params = []) {
         $route = $this->routes->getRouteByName($routeName);
         if (null === $route) {
             return null;
@@ -66,10 +61,10 @@ class Router {
         return $this->uriBuilder->buildPath($route, $params);
     }
 
-    private function extractUriVariables(array $uriChunks) {
+    private function extractUriVariables(Route $matchedRoute, array $uriChunks) {
         $uriIndex = 0;
         $variables = [];
-        foreach ($this->matchedRoute->getPathChunks() as $key => $value) {
+        foreach ($matchedRoute->getPathChunks() as $key => $value) {
             if (is_string($key)) {
                 $variables[$key] = $this->getVariableOfType($uriChunks[$uriIndex], $value);
             }

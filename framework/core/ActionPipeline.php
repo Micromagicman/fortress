@@ -69,8 +69,9 @@ class ActionPipeline {
         if (!($current instanceof Action)) {
             throw new InvalidArgumentException(
                 sprintf(
-                    "Pipeline elements must implements %s",
-                    Action::class
+                    "Pipeline elements must implements %s, %s given",
+                    Action::class,
+                    get_class($current)
                 )
             );
         }

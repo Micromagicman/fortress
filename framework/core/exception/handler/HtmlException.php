@@ -2,8 +2,8 @@
 
 namespace fortress\core\exception\handler;
 
-use fortress\core\exception\TemplateNotFoundException;
-use fortress\core\view\PhpView;
+use fortress\core\view\exception\TemplateNotFoundException;
+use fortress\core\view\ViewLoader;
 use Laminas\Diactoros\Response\HtmlResponse;
 use Throwable;
 
@@ -12,6 +12,12 @@ class HtmlException implements ExceptionResponseBuilder {
 
     private const PRODUCTION_ERROR_PAGE = "errors/error.prod.php";
     private const DEVELOPMENT_ERROR_PAGE = "errors/error.dev.php";
+
+    private ViewLoader $viewLoader;
+
+    public function __construct(ViewLoader $viewLoader) {
+        $this->viewLoader = $viewLoader;
+    }
 
     /**
      * HTTP ответ для режима разработки
@@ -56,7 +62,7 @@ class HtmlException implements ExceptionResponseBuilder {
      */
     private function createView(string $templateName, array $data, int $statusCode) {
         $data["statusCode"] = $statusCode;
-        $view = new PhpView($templateName);
+        $view = $this->viewLoader->load($templateName);
         $html = $view->render($data);
         return new HtmlResponse($html, $statusCode);
     }

@@ -16,6 +16,10 @@ class StringUtils {
      * @return bool
      */
     public static function startsWith(string $str, string $prefix) {
+        $prefixLen = mb_strlen($prefix);
+        if ($prefixLen > mb_strlen($str)) {
+            return false;
+        }
         return mb_substr($str, 0, mb_strlen($prefix)) === $prefix;
     }
 
@@ -27,6 +31,10 @@ class StringUtils {
      */
     public static function endsWith(string $str, string $suffix) {
         $mainLen = mb_strlen($str);
+        $suffixLen = mb_strlen($suffix);
+        if ($suffixLen > $mainLen) {
+            return false;
+        }
         return mb_substr($str, $mainLen - mb_strlen($suffix)) === $suffix;
     }
 

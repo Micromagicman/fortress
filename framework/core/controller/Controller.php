@@ -3,9 +3,10 @@
 namespace fortress\core\controller;
 
 use fortress\core\configuration\Configuration;
-use fortress\core\exception\TemplateNotFoundException;
 use fortress\core\router\Router;
-use fortress\core\view\PhpView;
+use fortress\core\view\exception\TemplateNotFoundException;
+use fortress\core\view\View;
+use fortress\core\view\ViewLoader;
 use fortress\security\User;
 use Laminas\Diactoros\Response\HtmlResponse;
 use Laminas\Diactoros\Response\JsonResponse;
@@ -49,7 +50,7 @@ abstract class Controller {
      */
     protected function redirect(string $to, array $uriParams = []) {
         $router = $this->container->get(Router::class);
-        $uri = $router->buildUri($to, $uriParams);
+        $uri = $router->buildPath($to, $uriParams);
         if (null !== $uri) {
             return new RedirectResponse($uri);
         }
@@ -97,13 +98,12 @@ abstract class Controller {
 
     /**
      * @param string $templateName
-     * @return PhpView
+     * @return View
      * @throws TemplateNotFoundException
      */
     private function createView(string $templateName) {
-        $templateType = $this->container->get("template.type");
-        switch ($templateType) {
-            default: return new PhpView($templateName);
-        }
+        /** @var ViewLoader $loader */
+        $loader = $this->container->get(ViewLoader::class);
+        return $loader->load($templateName);
     }
 }

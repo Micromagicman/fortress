@@ -7,7 +7,6 @@ use fortress\command\Command;
 use fortress\core\controller\ControllerAction;
 use fortress\core\di\ContainerBuilder;
 use fortress\core\di\loader\MapLoader;
-use fortress\core\exception\handler\ExceptionHandler;
 use fortress\core\exception\handler\ResponseExceptionHandler;
 use fortress\core\router\RouterInitializer;
 use fortress\security\csrf\CsrfTokenValidator;
@@ -34,14 +33,14 @@ class Framework {
     private ContainerBuilder $containerBuilder;
 
     /**
-     * Обработчик исключений
-     * @var ExceptionHandler
+     * Флаг, указывающий на режим запуска приложения
+     * @var bool
      */
-    private ExceptionHandler $exceptionHandler;
+    private bool $devMode;
 
-    public function __construct(ContainerBuilder $containerBuilder, bool $devMode = false) {
+    public function __construct(ContainerBuilder $containerBuilder, bool $devMode = true) {
         $this->containerBuilder = $containerBuilder;
-        $this->exceptionHandler = new ResponseExceptionHandler($devMode);
+        $this->devMode = $devMode;
     }
 
     /**
@@ -59,7 +58,8 @@ class Framework {
             }
             return $pipeline->run($request);
         } catch (Exception $exception) {
-            return $this->exceptionHandler->handle($request, $exception);
+            $exceptionHandler = new ResponseExceptionHandler($this->container, $this->devMode);
+            return $exceptionHandler->handle($request, $exception);
         }
     }
 

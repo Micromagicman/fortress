@@ -7,9 +7,11 @@ use fortress\core\di\loader\AutowireLoader;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 
+// Test dependency #1
 class A {
 }
 
+// Test dependency #2, depends on A
 class B {
     public function __construct(A $a) {
     }
@@ -25,14 +27,14 @@ class AutowireLoaderTest extends TestCase {
         $container->method("get")->willReturn(new A());
         $loader = new AutowireLoader();
         /** @var ContainerInterface $container */
-        $this->assertEquals(new B(new A()), $loader->load(B::class, $container));
+        self::assertEquals(new B(new A()), $loader->load(B::class, $container));
     }
 
     public function testIsLoadable() {
         $loader = new AutowireLoader();
-        $this->assertTrue($loader->isLoadable(A::class));
-        $this->assertTrue($loader->isLoadable(B::class));
-        $this->assertTrue($loader->isLoadable(TestCase::class));
-        $this->assertFalse($loader->isLoadable("not class"));
+        self::assertTrue($loader->isLoadable(A::class));
+        self::assertTrue($loader->isLoadable(B::class));
+        self::assertTrue($loader->isLoadable(TestCase::class));
+        self::assertFalse($loader->isLoadable("not class"));
     }
 }
