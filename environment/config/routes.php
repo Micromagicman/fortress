@@ -1,5 +1,6 @@
 <?php
 
+use app\controller\IndexController;
 use fortress\core\router\RouteCollection;
 
 /**
@@ -7,6 +8,6 @@ use fortress\core\router\RouteCollection;
  */
 return [
     function(RouteCollection $rc) {
-        $rc->get("welcome", "/", "app\controller\IndexController::welcome");
+        $rc->get("welcome", "/", IndexController::class);
     },
 ];
