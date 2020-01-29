@@ -2,20 +2,16 @@
 
 namespace fortress\core\router;
 
-use fortress\core\exception\RouteNotFound;
-use Symfony\Component\HttpFoundation\Request;
+use fortress\core\exception\UriBuildException;
+use fortress\core\router\exception\RouteNotFound;
 
 class Router {
 
-    private $uriBuilder;
+    private UriBuilder $uriBuilder;
 
-    private $routes;
-    private $matchedRoute;
+    private RouteCollection $routes;
 
-    public function __construct(
-        UriBuilder $uriBuilder,
-        RouteCollection $routeCollection
-    ) {
+    public function __construct(UriBuilder $uriBuilder, RouteCollection $routeCollection) {
         $this->routes = $routeCollection;
         $this->uriBuilder = $uriBuilder;
     }
@@ -28,39 +24,47 @@ class Router {
         return $this->routes;
     }
 
-    public function getMatchedRoute() {
-        return $this->matchedRoute;
-    }
-
-    public function match(Request $request) {
-        $requestUri = $request->getRequestUri();
-        $uriChunks = $this->uriBuilder->buildUriChunks($requestUri);
-        $method = $request->getMethod();
+    /**
+     * Поиск подходящего для заданного пути и HTTP-метода маршрута
+     * @param string $uri
+     * @param string $method
+     * @return Route|mixed
+     * @throws RouteNotFound
+     */
+    public function match(string $uri, string $method) {
+        $matchedRoute = null;
+        $uriChunks = $this->uriBuilder->buildUriChunks($uri);
         foreach ($this->routes->all() as $name => $route) {
             if ($route->match($uriChunks, $method)) {
-                $this->matchedRoute = $route;
+                $matchedRoute = $route;
             }
         }
-        if (null == $this->matchedRoute) {
-            throw new RouteNotFound($requestUri);
+        if (!isset($matchedRoute)) {
+            throw new RouteNotFound($method, $uri);
         }
-        $variables = $this->extractUriVariables($uriChunks);
-        $this->matchedRoute->setUriVariables($variables);
-        return $this->matchedRoute;
+        $variables = $this->extractUriVariables($matchedRoute, $uriChunks);
+        $matchedRoute->setPathVariables($variables);
+        return $matchedRoute;
     }
 
-    public function buildUri(string $routeName, array $params = []) {
+    /**
+     * @param string $routeName
+     * @param array $params
+     * @return string|null
+     * @throws UriBuildException
+     */
+    public function buildPath(string $routeName, array $params = []) {
         $route = $this->routes->getRouteByName($routeName);
         if (null === $route) {
             return null;
         }
-        return $this->uriBuilder->buildUri($route, $params);
+        return $this->uriBuilder->buildPath($route, $params);
     }
 
-    private function extractUriVariables(array $uriChunks) {
+    private function extractUriVariables(Route $matchedRoute, array $uriChunks) {
         $uriIndex = 0;
         $variables = [];
-        foreach ($this->matchedRoute->getChunks() as $key => $value) {
+        foreach ($matchedRoute->getPathChunks() as $key => $value) {
             if (is_string($key)) {
                 $variables[$key] = $this->getVariableOfType($uriChunks[$uriIndex], $value);
             }

@@ -3,8 +3,8 @@
 namespace fortress\security\provider;
 
 use fortress\core\database\DatabaseConnection;
-use fortress\core\exception\UserNotFound;
 use fortress\security\basic\BaseUser;
+use fortress\security\exception\UserNotFound;
 use fortress\security\RoleProvider;
 use fortress\security\UserProvider;
 
@@ -19,7 +19,7 @@ class DatabaseUserProvider extends UserProvider {
 
     public function byUsername(string $username) {
         $userData = $this->fetchUser($username);
-        if (null == $userData) {
+        if (null === $userData) {
             throw new UserNotFound($username);
         }
         return new BaseUser(

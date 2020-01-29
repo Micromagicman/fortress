@@ -1,6 +1,6 @@
 {
     "name": "micromagicman/fortress",
-    "version": "0.3.2",
+    "version": "0.4.0",
     "authors": [
         {
             "name": "micromagicman",
@@ -9,7 +9,7 @@
     ],
     "scripts": {
         "test": [
-            ""
+            "./vendor/bin/phpunit"
         ]
     },
     "require-dev": {
@@ -26,9 +26,7 @@
     "require": {
         "psr/container": "^1.0",
         "psr/http-message": "^1.0",
-        "symfony/http-foundation": "^4.2",
-        "ext-pdo": "*",
-        "ext-json": "*"
+        "laminas/laminas-diactoros": "^2.2"
     },
     "bin": [
         "bin/fortress"

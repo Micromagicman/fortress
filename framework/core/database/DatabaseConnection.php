@@ -79,7 +79,7 @@ class DatabaseConnection {
             $this->driver = Driver::createDriver($this->configuration->driverName());
             $this->connection = $this->driver->createConnection($this->configuration);
         } catch (PDOException $e) {
-            throw new DatabaseConnectionError("Failed to create PDO connection", $e);
+            throw new DatabaseConnectionError(sprintf("Failed to create PDO connection: %s", $e->getMessage()), $e);
         } catch (DatabaseConnectionError $e) {
             throw $e;
         }

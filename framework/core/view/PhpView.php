@@ -2,28 +2,24 @@
 
 namespace fortress\core\view;
 
-use fortress\core\exception\RenderException;
+use fortress\core\view\exception\RenderException;
 
 class PhpView extends View {
 
-    private $parent = null; // PhpView instance!
+    private PhpView $parent;
 
-    private $currentRenderingBlock;
+    private string $currentRenderingBlock;
 
-    private $content = "";
+    private string $content = "";
 
-    private $blocks = [];
+    private array $blocks = [];
 
-    public function __construct(string $templatePath, string $templateName) {
-        parent::__construct($templatePath, $templateName);
-    }
-
-    public function extend(string $parentTemplateFile) {
+    public function extend(string $parentTemplateFilePath) {
         $this->appendContent();
         if (!empty($this->blocks) || !empty($this->content)) {
             throw new RenderException("'extend' command must be at first line of template");
         }
-        $this->parent = new PhpView($this->getTemplateDir(), $parentTemplateFile);
+        $this->parent = new PhpView($parentTemplateFilePath);
         ob_start();
     }
 
@@ -48,10 +44,10 @@ class PhpView extends View {
         extract($variables);
         // Собираем ТОЛЬКО блоки
         ob_start();
-        require_once $this->templatePath;
+        require($this->templatePath);
         $this->content .= ob_get_clean();
         // Заполнение родителя
-        if (null !== $this->parent) {
+        if (isset($this->parent)) {
             return $this->parent->render($variables, $this->blocks);
         }
 

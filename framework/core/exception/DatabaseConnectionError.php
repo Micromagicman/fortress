@@ -7,6 +7,6 @@ use Exception;
 class DatabaseConnectionError extends FortressException {
 
     public function __construct(string $message, Exception $cause = null) {
-        parent::__construct("Database connection error: " . $message, $cause->getCode(), $cause);
+        parent::__construct("Database connection error: %s" . $message, $cause->getCode(), $cause);
     }
 }
