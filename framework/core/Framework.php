@@ -2,7 +2,6 @@
 
 namespace fortress\core;
 
-use Exception;
 use fortress\command\Command;
 use fortress\core\controller\ControllerAction;
 use fortress\core\di\ContainerBuilder;
@@ -13,6 +12,7 @@ use fortress\security\csrf\CsrfTokenValidator;
 use Laminas\Diactoros\Response\HtmlResponse;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Throwable;
 
 /**
  * Class Framework
@@ -57,7 +57,7 @@ class Framework {
                 $pipeline->pipe($action);
             }
             return $pipeline->run($request);
-        } catch (Exception $exception) {
+        } catch (Throwable $exception) {
             $exceptionHandler = new ResponseExceptionHandler($this->container, $this->devMode);
             return $exceptionHandler->handle($request, $exception);
         }
