@@ -3,8 +3,9 @@
 use fortress\core\configuration\Configuration;
 use fortress\core\di\holder\Factory;
 use fortress\core\di\loader\MapLoader;
+use fortress\security\Authenticator;
+use fortress\security\basic\BaseAuthenticator;
 use fortress\security\basic\BaseRoleProvider;
-use fortress\security\basic\BaseUser;
 use fortress\security\provider\DatabaseUserProvider;
 use fortress\security\RoleProvider;
 use fortress\security\Session;
@@ -14,10 +15,19 @@ use Psr\Container\ContainerInterface;
 
 return new MapLoader([
     // Класс пользователя
-    User::class => BaseUser::class,
+    User::class => Factory::new(function (ContainerInterface $container) {
+        return $container->get(Authenticator::class)->loadUser();
+    }),
     // Провайдеры пользователей и ролей
-    UserProvider::class => DatabaseUserProvider::class,
-    RoleProvider::class => BaseRoleProvider::class,
+    UserProvider::class => Factory::new(function (ContainerInterface $container) {
+        return $container->get(DatabaseUserProvider::class);
+    }),
+    RoleProvider::class => Factory::new(function (ContainerInterface $container) {
+        return $container->get(BaseRoleProvider::class);
+    }),
+    Authenticator::class => Factory::new(function (ContainerInterface $container) {
+        return $container->get(BaseAuthenticator::class);
+    }),
     // Вычислитель CSRF токена
     Configuration::CSRF_TOKEN_KEY => Factory::new(function (ContainerInterface $container) {
         return password_hash(
