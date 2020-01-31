@@ -41,6 +41,9 @@ class ControllerAction extends BeforeAction {
         if ($beforeResult instanceof ResponseInterface) {
             return $beforeResult;
         }
+        foreach ($route->getPathVariables() as $key => $value) {
+            $request = $request->withAttribute($key, $value);
+        }
         // Вызов контроллера
         $response = $this->validateResponse($this->resolveController($route)->handle($request));
         return $this->processAfterActions($response, $route->getAfterActions(), $next);
