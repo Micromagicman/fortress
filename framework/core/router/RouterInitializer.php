@@ -62,7 +62,9 @@ class RouterInitializer extends BeforeAction {
         } else if (is_array($routes)) {
             foreach ($routes as $routeInitializer) {
                 if ($routeInitializer instanceof Closure) {
-                    $routeInitializer($this->routeCollection);
+                    $routeCollection = new RouteCollection();
+                    $routeInitializer($routeCollection);
+                    $this->routeCollection->addCollection($routeCollection);
                 }
             }
         }
