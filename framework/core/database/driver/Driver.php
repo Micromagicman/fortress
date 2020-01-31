@@ -8,13 +8,19 @@ use PDO;
 
 abstract class Driver {
 
+    public const POSTGRES = "pgsql";
+
+    /**
+     * Создание драйвера по переданному имени
+     * @param string $name
+     * @return PostgreSqlDriver
+     * @throws DatabaseConnectionError
+     */
     public static function createDriver(string $name) {
-        switch ($name) {
-            case "pgsql":
-                return new PostgreSqlDriver();
-            default:
-                throw new DatabaseConnectionError("Could not find driver " . $name);
+        if (self::POSTGRES === $name) {
+            return new PostgreSqlDriver();
         }
+        throw new DatabaseConnectionError(sprintf("Could not find driver %s", $name));
     }
 
     public function createConnection(DatabaseConfiguration $conf) {
