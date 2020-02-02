@@ -19,6 +19,7 @@ class Configuration {
     public const SERVICE_CONFIGURATION_NAME = "services";
     public const ROUTES_CONFIGURATION_NAME = "routes";
     public const SECURITY_CONFIGURATION_NAME = "security";
+    public const CLI_COMMANDS_CONFIGURATION_NAME = "commands";
 
     /**
      * Конфигурационные параметры базы данных
@@ -94,17 +95,25 @@ class Configuration {
         foreach (self::getConfigurations() as $configFile) {
             try {
                 $configurations[] = $this->loadConfiguration($configFile);
-            } catch (ConfigurationNotFoundException $e) {}
+            } catch (ConfigurationNotFoundException $e) {
+            }
         }
         return $configurations;
     }
 
     private static function getConfigurations() {
+        if (PHP_SAPI === "cli") {
+            return [
+                self::DATABASE_CONFIGURATION_NAME,
+                self::CLI_COMMANDS_CONFIGURATION_NAME
+            ];
+        }
         return [
             self::DATABASE_CONFIGURATION_NAME,
             self::PARAMETERS_CONFIGURATION_NAME,
             self::SECURITY_CONFIGURATION_NAME,
-            self::SERVICE_CONFIGURATION_NAME
+            self::SERVICE_CONFIGURATION_NAME,
+            self::CLI_COMMANDS_CONFIGURATION_NAME
         ];
     }
 }

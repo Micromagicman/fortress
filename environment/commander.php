@@ -1,13 +1,15 @@
 <?php
 
+require_once "vendor/autoload.php";
+
 use fortress\command\Command;
+
+error_reporting(E_ERROR | E_PARSE);
 
 $args = array_slice($argv, 1);
 if (empty($args)) {
     die("Command name required");
 }
-
-require_once __DIR__ . "/bootstrap.php";
 
 /**
  * Проверка существования команды с переданным именем
