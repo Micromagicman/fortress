@@ -14,12 +14,18 @@ class PhpView extends View {
 
     private array $blocks = [];
 
+    /**
+     * Указание родительского view
+     * @param string $parentTemplateFilePath
+     * @throws RenderException
+     */
     public function extend(string $parentTemplateFilePath) {
         $this->appendContent();
         if (!empty($this->blocks) || !empty($this->content)) {
             throw new RenderException("'extend' command must be at first line of template");
         }
-        $this->parent = new PhpView($parentTemplateFilePath);
+        $parentTemplateFilePath = $this->viewLoader->createTemplateFilePath($parentTemplateFilePath);
+        $this->parent = new PhpView($parentTemplateFilePath, $this->viewLoader);
         ob_start();
     }
 
@@ -31,9 +37,9 @@ class PhpView extends View {
     }
 
     public function end() {
-        if (null !== $this->currentRenderingBlock) {
+        if (isset($this->currentRenderingBlock)) {
             $this->blocks[$this->currentRenderingBlock] = ob_get_clean();
-            $this->currentRenderingBlock = null;
+            $this->currentRenderingBlock = "";
         } else {
             ob_end_clean();
         }

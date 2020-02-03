@@ -22,12 +22,15 @@ class ViewLoader {
      */
     public function load(string $templateName, string $templateType = Configuration::DEFAULT_TEMPLATE_TYPE) {
         if (Configuration::DEFAULT_TEMPLATE_TYPE === $templateType) {
-            return new PhpView($this->createTemplateFilePath($templateName, $templateType));
+            return new PhpView($this->createTemplateFilePath($templateName, $templateType), $this);
         }
         throw new TemplateNotFoundException($templateName);
     }
 
-    private function createTemplateFilePath(string $templateName, string $templateType) {
+    public function createTemplateFilePath(
+        string $templateName,
+        string $templateType = Configuration::DEFAULT_TEMPLATE_TYPE
+    ) {
         if (!StringUtils::endsWith($templateName, ".$templateType")) {
             $templateName .= ".$templateType";
         }

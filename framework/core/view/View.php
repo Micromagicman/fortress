@@ -10,12 +10,15 @@ abstract class View {
      */
     protected string $templatePath;
 
+    protected ViewLoader $viewLoader;
+
     /**
      * Инициализация view
      * @param string $templateFilePath
      */
-    public function __construct(string $templateFilePath) {
+    public function __construct(string $templateFilePath, ViewLoader $viewLoader) {
         $this->templatePath = $templateFilePath;
+        $this->viewLoader = $viewLoader;
     }
 
     /**
