@@ -2,9 +2,11 @@
 
 namespace fortress\core;
 
+use Exception;
 use fortress\command\Command;
 use fortress\core\controller\ControllerAction;
 use fortress\core\di\ContainerBuilder;
+use fortress\core\di\exception\DependencyNotFoundException;
 use fortress\core\di\loader\MapLoader;
 use fortress\core\exception\handler\ResponseExceptionHandler;
 use fortress\core\router\RouterInitializer;
@@ -65,10 +67,23 @@ class Framework {
 
     /**
      * Обработка консольной команды
-     * @param Command $command
+     * @param string $commandName
+     * @param array $arguments
      */
-    public function handleCommand(Command $command) {
-        $command->run();
+    public function handleCommand(string $commandName, array $arguments = []) {
+        $this->container = $this->containerBuilder
+            ->withLoaders(new MapLoader(Command::getNativeCliCommands()))
+            ->build();
+        try {
+            $commandClass = $this->container->get($commandName);
+            $command = $this->container->get($commandClass);
+            $command->setArguments($arguments);
+            $command->run();
+        } catch (DependencyNotFoundException $exception) {
+            die(sprintf("Command with name '%s' not defined", $commandName));
+        } catch (Exception $exception) {
+            die(sprintf("Command excution error: %s", $exception->getMessage()));
+        }
     }
 
     /**
