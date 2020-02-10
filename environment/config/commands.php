@@ -1,7 +1,8 @@
 <?php
 
 use App\command\CommandCommand;
+use fortress\core\di\loader\MapLoader;
 
-return [
+return new MapLoader([
     "command" => CommandCommand::class
-];
+]);

@@ -96,24 +96,24 @@ class Configuration {
             try {
                 $configurations[] = $this->loadConfiguration($configFile);
             } catch (ConfigurationNotFoundException $e) {
+                var_dump($e->getMessage());
             }
         }
         return $configurations;
     }
 
     private static function getConfigurations() {
-        if (PHP_SAPI === "cli") {
-            return [
-                self::DATABASE_CONFIGURATION_NAME,
-                self::CLI_COMMANDS_CONFIGURATION_NAME
-            ];
-        }
-        return [
+        $commonConfigs = [
             self::DATABASE_CONFIGURATION_NAME,
             self::PARAMETERS_CONFIGURATION_NAME,
+        ];
+        if (PHP_SAPI === "cli") {
+            return array_merge($commonConfigs, [self::CLI_COMMANDS_CONFIGURATION_NAME]);
+        }
+        return array_merge($commonConfigs, [
             self::SECURITY_CONFIGURATION_NAME,
             self::SERVICE_CONFIGURATION_NAME,
             self::CLI_COMMANDS_CONFIGURATION_NAME
-        ];
+        ]);
     }
 }

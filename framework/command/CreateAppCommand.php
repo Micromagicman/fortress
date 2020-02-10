@@ -57,6 +57,10 @@ class CreateAppCommand extends Command {
             getcwd() . "/bootstrap.php",
             file_get_contents(__DIR__ . "/../../environment/bootstrap.php")
         );
+        file_put_contents(
+            getcwd() . "/commander.php",
+            file_get_contents(__DIR__ . "/../../environment/commander.php")
+        );
         $this->writeWithData("Update composer.json");
         $composerConfig = json_decode(file_get_contents(getcwd() . "/composer.json"), true);
         $composerConfig["autoload"]["psr-4"]["app\\"] = "app/";
