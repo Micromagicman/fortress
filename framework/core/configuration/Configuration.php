@@ -95,9 +95,7 @@ class Configuration {
         foreach (self::getConfigurations() as $configFile) {
             try {
                 $configurations[] = $this->loadConfiguration($configFile);
-            } catch (ConfigurationNotFoundException $e) {
-                var_dump($e->getMessage());
-            }
+            } catch (ConfigurationNotFoundException $e) {}
         }
         return $configurations;
     }
