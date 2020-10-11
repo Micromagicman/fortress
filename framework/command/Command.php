@@ -35,12 +35,20 @@ abstract class Command {
     }
 
     /**
-     * Список аргументов
-     * По умолчанию, команда не имеет аргументов
+     * Список парметров
+     * По умолчанию, команда не имеет параметров
      * @return array
      */
     public function getParameters() {
         return [];
+    }
+
+    /**
+     * Список аргументов
+     * @return array
+     */
+    public function getArguments() {
+        return $this->arguments;
     }
 
     /**

@@ -6,6 +6,7 @@ use Exception;
 use fortress\command\Command;
 use fortress\core\controller\ControllerAction;
 use fortress\core\di\ContainerBuilder;
+use fortress\core\di\exception\DependencyNotFoundException;
 use fortress\core\di\loader\MapLoader;
 use fortress\core\exception\handler\ResponseExceptionHandler;
 use fortress\core\router\RouterInitializer;
@@ -13,6 +14,7 @@ use fortress\security\csrf\CsrfTokenValidator;
 use Laminas\Diactoros\Response\HtmlResponse;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Throwable;
 
 /**
  * Class Framework
@@ -57,7 +59,7 @@ class Framework {
                 $pipeline->pipe($action);
             }
             return $pipeline->run($request);
-        } catch (Exception $exception) {
+        } catch (Throwable $exception) {
             $exceptionHandler = new ResponseExceptionHandler($this->container, $this->devMode);
             return $exceptionHandler->handle($request, $exception);
         }
@@ -65,10 +67,23 @@ class Framework {
 
     /**
      * Обработка консольной команды
-     * @param Command $command
+     * @param string $commandName
+     * @param array $arguments
      */
-    public function handleCommand(Command $command) {
-        $command->run();
+    public function handleCommand(string $commandName, array $arguments = []) {
+        $this->container = $this->containerBuilder
+            ->withLoaders(new MapLoader(Command::getNativeCliCommands()))
+            ->build();
+        try {
+            $commandClass = $this->container->get($commandName);
+            $command = $this->container->get($commandClass);
+            $command->setArguments($arguments);
+            $command->run();
+        } catch (DependencyNotFoundException $exception) {
+            die(sprintf("Command with name '%s' not defined", $commandName));
+        } catch (Exception $exception) {
+            die(sprintf("Command excution error: %s", $exception->getMessage()));
+        }
     }
 
     /**

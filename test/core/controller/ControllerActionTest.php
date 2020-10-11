@@ -32,7 +32,6 @@ class ControllerActionTest extends TestCase {
             ->with("/api/test", "POST")
             ->willReturn(new Route("route", "/api/test", ATestController::class));
 
-
         $uriMock = $this->createMock(UriInterface::class);
         $uriMock->method("getPath")
             ->willReturn("/api/test");
@@ -42,14 +41,12 @@ class ControllerActionTest extends TestCase {
         $requestMock->method("getMethod")
             ->willReturn("POST");
 
-
-
         $action = new ControllerAction($containerMock, $routerMock);
         self::assertEquals(
             404,
             $action->handle($requestMock, function (ResponseInterface $response) {
-                return $response->getStatusCode();
-            })
+                return $response;
+            })->getStatusCode()
         );
     }
 }

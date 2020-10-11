@@ -10,3 +10,4 @@
 *.lock
 
 bootstrap.php
+commander.php

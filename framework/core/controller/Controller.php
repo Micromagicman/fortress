@@ -64,7 +64,7 @@ abstract class Controller {
      * @return JsonResponse
      */
     protected function json($data, int $statusCode = 200) {
-        return new JsonResponse($data, $statusCode);
+        return new JsonResponse($data, $statusCode, [], JSON_UNESCAPED_UNICODE);
     }
 
     /**

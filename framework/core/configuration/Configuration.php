@@ -19,6 +19,7 @@ class Configuration {
     public const SERVICE_CONFIGURATION_NAME = "services";
     public const ROUTES_CONFIGURATION_NAME = "routes";
     public const SECURITY_CONFIGURATION_NAME = "security";
+    public const CLI_COMMANDS_CONFIGURATION_NAME = "commands";
 
     /**
      * Конфигурационные параметры базы данных
@@ -100,11 +101,17 @@ class Configuration {
     }
 
     private static function getConfigurations() {
-        return [
+        $commonConfigs = [
             self::DATABASE_CONFIGURATION_NAME,
             self::PARAMETERS_CONFIGURATION_NAME,
-            self::SECURITY_CONFIGURATION_NAME,
-            self::SERVICE_CONFIGURATION_NAME
         ];
+        if (PHP_SAPI === "cli") {
+            return array_merge($commonConfigs, [self::CLI_COMMANDS_CONFIGURATION_NAME]);
+        }
+        return array_merge($commonConfigs, [
+            self::SECURITY_CONFIGURATION_NAME,
+            self::SERVICE_CONFIGURATION_NAME,
+            self::CLI_COMMANDS_CONFIGURATION_NAME
+        ]);
     }
 }

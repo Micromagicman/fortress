@@ -32,14 +32,21 @@ class ControllerAction extends BeforeAction {
      * @param callable $next
      * @return ResponseInterface
      * @throws RouteNotFound
+     * @throws UnexpectedResponseException
      */
     protected function handleRequest(ServerRequestInterface $request, callable $next) {
         /** @var Route $route */
         $route = $this->resolveRoute($request);
-        $request = $this->getActionsPipeline($route->getBeforeActions())->run($request);
+        $beforeResult = $this->processBeforeActions($request, $route->getBeforeActions());
+        if ($beforeResult instanceof ResponseInterface) {
+            return $beforeResult;
+        }
+        foreach ($route->getPathVariables() as $key => $value) {
+            $request = $request->withAttribute($key, $value);
+        }
         // Вызов контроллера
-        $response = $this->resolveController($route)->handle($request);
-        return $this->getActionsPipeline($route->getAfterActions())->run($response, $next);
+        $response = $this->validateResponse($this->resolveController($route)->handle($request));
+        return $this->processAfterActions($response, $route->getAfterActions(), $next);
     }
 
     /**
@@ -74,5 +81,51 @@ class ControllerAction extends BeforeAction {
             $pipeline->pipe($action);
         }
         return $pipeline;
+    }
+
+    /**
+     * Обработка действия после вызова кода контроллера
+     * @param ResponseInterface $response
+     * @param array $actions
+     * @param callable $next
+     * @return mixed
+     * @throws UnexpectedResponseException
+     */
+    private function processAfterActions(ResponseInterface $response, array $actions, callable $next) {
+        $result = $this->getActionsPipeline($actions)->run($response, $next);
+        return $this->validateResponse($result);
+    }
+
+    /**
+     * Обработка действия до вызова кода контроллера
+     * @param ServerRequestInterface $request
+     * @param array $actions
+     * @return mixed
+     * @throws UnexpectedResponseException
+     */
+    private function processBeforeActions(ServerRequestInterface $request, array $actions) {
+        $pipeline = $this->getActionsPipeline($actions);
+        $result = $pipeline->run($request);
+        if (!($result instanceof ServerRequestInterface)) {
+            return $this->validateResponse($result);
+        }
+        return $result;
+    }
+
+    /**
+     * Проверка корректности возвращаемого из action-ов HTTP ответа
+     * @param $actionResult
+     * @return mixed
+     * @throws UnexpectedResponseException
+     */
+    private function validateResponse($actionResult) {
+        if ($actionResult instanceof ResponseInterface) {
+            return $actionResult;
+        }
+        throw new UnexpectedResponseException(sprintf(
+            "Unexpected response type. Implementation of %s expected, %s given",
+            ResponseInterface::class,
+            get_class($actionResult)
+        ));
     }
 }

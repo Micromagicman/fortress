@@ -2,11 +2,8 @@
 
 namespace fortress\core\exception;
 
-use Exception;
-
 class DatabaseConnectionError extends FortressException {
-
-    public function __construct(string $message, Exception $cause = null) {
-        parent::__construct("Database connection error: %s" . $message, $cause->getCode(), $cause);
+    public function __construct(string $message) {
+        parent::__construct(sprintf("Database connection error: %s", $message));
     }
 }
